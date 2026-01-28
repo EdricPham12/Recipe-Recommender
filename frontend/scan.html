@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Quét ảnh nguyên liệu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">SmartCook</div>
+          <div class="sidebar-sub">AI Meal Planner</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="nav-item" href="index.html">
+            <span class="dot"></span>
+            Trang chủ
+          </a>
+          <a class="nav-item nav-item-active" href="scan.html">
+            <span class="dot"></span>
+            Quét ảnh (AI)
+          </a>
+          <a class="nav-item" href="reviews.html">
+            <span class="dot"></span>
+            Đánh giá món
+          </a>
+          <a class="nav-item" href="pantry.html">
+            <span class="dot"></span>
+            Tủ lạnh
+          </a>
+          <a class="nav-item" href="favorites.html">
+            <span class="dot"></span>
+            Món yêu thích
+          </a>
+          <a class="nav-item" href="history.html">
+            <span class="dot"></span>
+            Lịch sử
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="sidebar-settings" type="button" id="btnSettingsNav">
+            <span class="sidebar-settings-icon">⚙</span>
+            <span class="sidebar-settings-text">Cài đặt</span>
+          </button>
+          <button class="sidebar-user-row" type="button" id="btnProfileNav">
+            <span class="sidebar-user-avatar"></span>
+            <span class="sidebar-user-name">Đăng nhập</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="app">
+        <header class="topbar">
+          <div class="topbar-left">
+            <p class="eyebrow">Quét ảnh nguyên liệu</p>
+            <h1 class="page-title">Đưa ảnh, AI nhận diện chữ trên nhãn.</h1>
+            <p class="page-sub">
+              Tải ảnh hóa đơn, nhãn thực phẩm hoặc giấy ghi chú. Hệ thống sẽ OCR tiếng Việt/Anh
+              và tách thành danh sách nguyên liệu cho bạn.
+            </p>
+          </div>
+        </header>
+
+        <main class="grid">
+          <section class="card">
+            <div class="two-col">
+              <div class="panel">
+                <div class="panel-title">Ảnh nguyên liệu</div>
+                <input id="imageInput" type="file" accept="image/*" />
+                <div class="hint">Ảnh rõ, đủ sáng; ưu tiên chụp gần phần chữ nguyên liệu.</div>
+
+                <div class="ocr-row">
+                  <button id="btnRunOCR" class="btn btn-secondary" type="button">Chạy OCR</button>
+                  <div id="ocrStatus" class="status">Chưa chạy</div>
+                </div>
+
+                <label class="label">Kết quả OCR (có thể sửa)</label>
+                <textarea id="ocrText" class="textarea" rows="9" placeholder="Văn bản OCR sẽ hiển thị ở đây..."></textarea>
+
+                <div class="row-actions">
+                  <button id="btnExtractIngredients" class="btn btn-ghost" type="button">
+                    Tách nguyên liệu từ OCR →
+                  </button>
+                  <button id="btnClassifyOCR" class="btn btn-secondary" type="button">
+                    Phân loại nguyên liệu + gia vị
+                  </button>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-title">Nguyên liệu sau khi tách</div>
+                <label class="label">Nguyên liệu (mỗi dòng 1 loại)</label>
+                <textarea
+                  id="ingredientsText"
+                  class="textarea"
+                  rows="8"
+                  placeholder="Kết quả sau khi tách từ OCR sẽ xuất hiện ở đây..."
+                ></textarea>
+                <label class="label">Gia vị/đồ khô</label>
+                <textarea
+                  id="pantryText"
+                  class="textarea"
+                  rows="6"
+                  placeholder="Gia vị tách từ OCR sẽ xuất hiện ở đây..."
+                ></textarea>
+                <div class="row-actions">
+                  <button id="btnSavePantry" class="btn btn-secondary" type="button">Lưu vào tủ lạnh</button>
+                  <button id="btnUsePantry" class="btn btn-ghost" type="button">Thêm vào nguyên liệu</button>
+                </div>
+                <div class="hint">
+                  Sau khi kiểm tra lại, bạn có thể quay về <b>Trang chủ</b> để AI gợi ý món từ
+                  danh sách nguyên liệu này.
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

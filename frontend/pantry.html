@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Tủ lạnh</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">SmartCook</div>
+          <div class="sidebar-sub">AI Meal Planner</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="nav-item" href="index.html">
+            <span class="dot"></span>
+            Trang chủ
+          </a>
+          <a class="nav-item" href="scan.html">
+            <span class="dot"></span>
+            Quét ảnh (AI)
+          </a>
+          <a class="nav-item" href="reviews.html">
+            <span class="dot"></span>
+            Đánh giá món
+          </a>
+          <a class="nav-item nav-item-active" href="pantry.html">
+            <span class="dot"></span>
+            Tủ lạnh
+          </a>
+          <a class="nav-item" href="favorites.html">
+            <span class="dot"></span>
+            Món yêu thích
+          </a>
+          <a class="nav-item" href="history.html">
+            <span class="dot"></span>
+            Lịch sử
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="sidebar-settings" type="button" id="btnSettingsNav">
+            <span class="sidebar-settings-icon">⚙</span>
+            <span class="sidebar-settings-text">Cài đặt</span>
+          </button>
+          <button class="sidebar-user-row" type="button" id="btnProfileNav">
+            <span class="sidebar-user-avatar"></span>
+            <span class="sidebar-user-name">Đăng nhập</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="app">
+        <header class="topbar">
+          <div class="topbar-left">
+            <p class="eyebrow">Tủ lạnh</p>
+            <h1 class="page-title">Quản lý nguyên liệu &amp; cần mua thêm.</h1>
+            <p class="page-sub">
+              Lưu gia vị/đồ khô thường dùng để SmartCook hiểu bạn đã có sẵn.
+            </p>
+          </div>
+        </header>
+
+        <main class="grid">
+          <section class="card">
+            <div class="two-col">
+              <div class="panel">
+                <div class="panel-title">Nguyên liệu hiện có</div>
+                <textarea
+                  id="ingredientsText"
+                  class="textarea"
+                  rows="6"
+                  placeholder="Ví dụ: Trứng, Rau cải, Cá hồi..."
+                ></textarea>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Gia vị/đồ khô</div>
+                <textarea
+                  id="pantryText"
+                  class="textarea"
+                  rows="6"
+                  placeholder="Ví dụ: Nước mắm, Muối, Dầu ăn..."
+                ></textarea>
+                <div class="row-actions">
+                  <button id="btnSavePantry" class="btn btn-secondary" type="button">Lưu tủ lạnh</button>
+                  <button id="btnUsePantry" class="btn btn-ghost" type="button">Thêm vào nguyên liệu</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Cần mua thêm</h2>
+            <div class="split-list">
+              <div>
+                <div class="label">Thiếu</div>
+                <ul id="missingList" class="list"></ul>
+              </div>
+              <div>
+                <div class="label">Đã có</div>
+                <ul id="haveList" class="list"></ul>
+              </div>
+            </div>
+            <div class="hint">Danh sách cập nhật theo nguyên liệu bạn nhập và tủ lạnh.</div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Đăng ký</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="register">
+    <div class="auth-shell">
+      <div class="card auth-card">
+        <div class="auth-brand">SmartCook</div>
+        <div class="auth-sub">Tạo tài khoản để lưu lịch sử và món yêu thích.</div>
+        <form id="registerForm" class="form-grid" autocomplete="on">
+          <div class="full">
+            <label class="label">Họ và tên</label>
+            <input id="registerName" class="input" placeholder="Ví dụ: Nguyễn Văn A" required />
+          </div>
+          <div class="full">
+            <label class="label">Email</label>
+            <input id="registerEmail" type="email" class="input" placeholder="name@email.com" required />
+          </div>
+          <div class="full">
+            <label class="label">Mật khẩu</label>
+            <input id="registerPassword" type="password" class="input" placeholder="••••••••" required />
+          </div>
+          <div class="full">
+            <label class="label">Xác nhận mật khẩu</label>
+            <input id="registerConfirm" type="password" class="input" placeholder="••••••••" required />
+          </div>
+          <div class="full row-actions">
+            <button class="btn btn-primary" type="submit">Đăng ký</button>
+            <a class="btn btn-ghost" href="login.html">Đã có tài khoản</a>
+          </div>
+        </form>\n</div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+

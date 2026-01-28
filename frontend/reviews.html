@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Đánh giá món</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">SmartCook</div>
+          <div class="sidebar-sub">AI Meal Planner</div>
+        </div>
+        <nav class="sidebar-nav">
+          <a class="nav-item" href="index.html">
+            <span class="dot"></span>
+            Trang chủ
+          </a>
+          <a class="nav-item" href="scan.html">
+            <span class="dot"></span>
+            Quét ảnh (AI)
+          </a>
+          <a class="nav-item nav-item-active" href="reviews.html">
+            <span class="dot"></span>
+            Đánh giá món
+          </a>
+          <a class="nav-item" href="pantry.html">
+            <span class="dot"></span>
+            Tủ lạnh
+          </a>
+          <a class="nav-item" href="favorites.html">
+            <span class="dot"></span>
+            Món yêu thích
+          </a>
+          <a class="nav-item" href="history.html">
+            <span class="dot"></span>
+            Lịch sử
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <button class="sidebar-settings" type="button" id="btnSettingsNav">
+            <span class="sidebar-settings-icon">⚙</span>
+            <span class="sidebar-settings-text">Cài đặt</span>
+          </button>
+          <button class="sidebar-user-row" type="button" id="btnProfileNav">
+            <span class="sidebar-user-avatar"></span>
+            <span class="sidebar-user-name">Đăng nhập</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="app">
+        <header class="topbar">
+          <div class="topbar-left">
+            <p class="eyebrow">Đánh giá món</p>
+            <h1 class="page-title">Chia sẻ cảm nhận để cải thiện gợi ý.</h1>
+            <p class="page-sub">
+              Chọn món đã nấu từ lịch sử hoặc từ danh sách gợi ý gần đây.
+            </p>
+          </div>
+        </header>
+
+        <main class="grid">
+          <section class="card">
+            <h2>Gửi đánh giá</h2>
+            <div class="form-grid">
+              <div class="full">
+  <label class="label">Mon da nau</label>
+  <select id="reviewDishSelect" class="select select-sm"></select>
+  <div id="customDishWrap" class="hidden" style="margin-top: 8px">
+    <input id="ratingDish" class="input" placeholder="Hoac nhap ten mon (neu can)" />
+  </div>
+</div>
+              <div class="full">
+                <label class="label">Đánh giá</label>
+                <div id="ratingStars" class="rating-stars">
+                  <button type="button" class="star" data-rate="1">★</button>
+                  <button type="button" class="star" data-rate="2">★</button>
+                  <button type="button" class="star" data-rate="3">★</button>
+                  <button type="button" class="star" data-rate="4">★</button>
+                  <button type="button" class="star" data-rate="5">★</button>
+                </div>
+              </div>
+              <div class="full">
+                <label class="label">Nhận xét</label>
+                <textarea id="ratingText" class="textarea" rows="4" placeholder="Món hợp vị, dễ nấu..."></textarea>
+              </div>
+              <div class="full row-actions">
+                <button id="btnSendFeedback" class="btn btn-secondary" type="button">Gửi đánh giá</button>
+                <span id="ratingStatus" class="status"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Đánh giá gần đây</h2>
+            <div id="reviewsList" class="reviews-list"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
