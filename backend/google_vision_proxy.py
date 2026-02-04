@@ -1,12 +1,13 @@
 ﻿from flask import Flask, request, jsonify
-import base64
+from flask_cors import CORS
 import json
 import os
 import re
 
 app = Flask(__name__)
+CORS(app)
 
-# OpenAI Vision
+# OpenAI client
 try:
     from openai import OpenAI
     openai_client = OpenAI()
@@ -27,10 +28,29 @@ def _extract_json(text: str):
         return None
 
 
+@app.after_request
+def add_cors_headers(resp):
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    resp.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    return resp
+
+
+@app.route('/api/identify-food', methods=['OPTIONS'])
+def identify_food_options():
+    return ('', 200)
+
+
+@app.route('/api/suggest-recipes', methods=['OPTIONS'])
+def suggest_recipes_options():
+    return ('', 200)
+
+
 @app.route('/api/identify-food', methods=['POST'])
 def identify_food():
     if openai_client is None:
         return jsonify({'error': 'OpenAI client not configured. Install openai and set OPENAI_API_KEY.'}), 500
+
     data = request.get_json(silent=True) or {}
     img = data.get('image')
     if not img:
@@ -42,12 +62,10 @@ def identify_food():
         image_url = f"data:image/jpeg;base64,{img}"
 
     prompt = (
-        "Ban la tro ly nhan dien thuc pham. CHI lay NGUYEN LIEU an duoc (thit, rau, gia vi). TUYET DOI bo qua do vat khong phai nguyen lieu: dia, to, chen, ly, muong, dua, dao, ban, go, thot, khan, hop. Neu khong chac chan do la nguyen lieu, KHONG them vao danh sach. Tap trung vao NGUYEN LIEU an duoc (thit, rau, gia vi). Bo qua do vat khong phai nguyen lieu: dia, to, chen, ly, muong, dua, dao, ban, go, thot. "
-        "Hay xac dinh mon an (neu ro) va liet ke nguyen lieu nhin thay ro, "
-        "bao gom ca cac nguyen lieu phu xung quanh (vi du: tieu, rau, gia vi). "
-        "Tra ve JSON thuan theo schema: "
-        "{\"dish\": string|null, \"ingredients\": [string], \"confidence\": number 0-1}. "
-        "Khong them giai thich."
+        "Ban la dau bep. Hay nhan dien mon an/ nguyen lieu trong anh. "
+        "Uu tien nguyen lieu chinh (thit, rau, ca, trung, gia vi). "
+        "Bo qua do dung khong phai nguyen lieu (dia, muong, dao, bat, nen ban). "
+        "Tra ve JSON thuan: {\"dish\": string, \"ingredients\": [string], \"confidence\": number}."
     )
 
     try:
@@ -61,21 +79,89 @@ def identify_food():
                 ],
             }],
         )
-        text = (resp.output_text or "").strip()
+        text = (resp.output_text or '').strip()
         parsed = _extract_json(text) or {}
-        dish = parsed.get('dish')
+        dish = parsed.get('dish') or ''
         ingredients = parsed.get('ingredients') or []
-        confidence = parsed.get('confidence', 0)
-        if not isinstance(ingredients, list):
-            ingredients = []
+        confidence = parsed.get('confidence') or 0
         return jsonify({'dish': dish, 'ingredients': ingredients, 'confidence': confidence})
     except Exception as e:
-        print('OpenAI vision call failed', e)
-        return jsonify({'error': 'openai vision failed'}), 500
+        print('OpenAI identify call failed', e)
+        return jsonify({'error': 'openai identify failed'}), 500
+
+
+@app.route('/api/suggest-recipes', methods=['POST'])
+def suggest_recipes():
+    if openai_client is None:
+        return jsonify({'error': 'OpenAI client not configured. Install openai and set OPENAI_API_KEY.'}), 500
+
+    data = request.get_json(silent=True) or {}
+    raw_ingredients = data.get('ingredients')
+
+    if isinstance(raw_ingredients, str):
+        ingredients = [s.strip() for s in raw_ingredients.split(',') if s.strip()]
+    elif isinstance(raw_ingredients, list):
+        ingredients = [str(s).strip() for s in raw_ingredients if str(s).strip()]
+    else:
+        ingredients = []
+
+    if not ingredients:
+        return jsonify({'error': 'no ingredients provided'}), 400
+
+    try:
+        count = int(data.get('count') or 0)
+    except Exception:
+        count = 0
+
+    if count <= 0:
+        n = len(ingredients)
+        if n < 3:
+            count = 1
+        elif n < 6:
+            count = 2
+        else:
+            count = 3
+    count = max(1, min(3, count))
+
+    prompt = (
+        f"Ban la dau bep. Hay goi y {count} mon an phu hop tu danh sach nguyen lieu. "
+        "Uu tien mon Viet, huong dan vua phai (khong qua dai), de lam. "
+        "Tra ve JSON thuan theo schema: {\"results\":[{\"title\":string,\"ingredients\":[string],\"steps\":[string],\"tips\":[string],\"time\":{\"prep_min\":number,\"cook_min\":number},\"servings\":number,\"difficulty\":\"easy|medium|hard\"}]}. "
+        "Khong them giai thich."
+    )
+
+    try:
+        resp = openai_client.responses.create(
+            model="gpt-4.1-mini",
+            input=[{
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": prompt + "\nNguyen lieu: " + ", ".join(ingredients)},
+                ],
+            }],
+        )
+        text = (resp.output_text or '').strip()
+        parsed = _extract_json(text) or {}
+        results = parsed.get('results') or []
+        norm = []
+        for r in results:
+            if not isinstance(r, dict):
+                continue
+            norm.append({
+                'title': r.get('title') or 'Mon goi y',
+                'ingredients': r.get('ingredients') or [],
+                'steps': r.get('steps') or [],
+                'tips': r.get('tips') or [],
+                'time': r.get('time') or {},
+                'servings': r.get('servings') or 2,
+                'difficulty': r.get('difficulty') or 'easy'
+            })
+        return jsonify({'results': norm})
+    except Exception as e:
+        print('OpenAI suggest call failed', e)
+        return jsonify({'error': 'openai suggest failed'}), 500
 
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
-
