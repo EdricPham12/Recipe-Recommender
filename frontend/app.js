@@ -20,9 +20,7 @@ let activeResults = [];
 let timerInterval = null;
 let remainingSeconds = 0;
 let currentRating = 0;
-let lastGenerationId = null;
-
-const PANTRY_KEYWORDS = [
+let lastGenerationId = null;const PANTRY_KEYWORDS = [
   "muoi",
   "duong",
   "hat nem",
@@ -65,8 +63,8 @@ function escapeHtml(s) {
 
 function normalizeIngredients(text) {
   const raw = (text || "")
-    .replace(/\r/g, "\n")
-    .split(/\n|,/g)
+    .replace(/\r/g, "")
+    .split(/[\n,]+/g)
     .map((s) => s.trim())
     .filter(Boolean);
 
@@ -321,7 +319,7 @@ function getConstraints() {
 
   const allergiesRaw = $("allergies")?.value || "";
   const allergies = allergiesRaw
-    .split(/,|\n/g)
+    .split(/,|/g)
     .map((s) => s.trim())
     .filter(Boolean);
 
@@ -419,7 +417,7 @@ function renderResultList(results) {
 function getAvailableItems() {
   const ingText = $("ingredientsText")?.value || "";
   const pantryText = $("pantryText")?.value || "";
-  return normalizeIngredients([ingText, pantryText].join("\n")).map((x) => x.toLowerCase());
+  return normalizeIngredients([ingText, pantryText].join(", ")).map((x) => x.toLowerCase());
 }
 
 function isAvailableIngredient(name, available) {
@@ -483,7 +481,7 @@ function updateShoppingList(result) {
 
 function extractOCRLines(text) {
   const lines = String(text || "")
-    .replace(/\r/g, "\n")
+    .replace(/\r/g, "")
     .split("\n")
     .map((s) => s.trim())
     .filter(Boolean);
@@ -501,7 +499,7 @@ function extractOCRLines(text) {
 
 function classifyOCR() {
   const text = $("ocrText")?.value || "";
-  const list = normalizeIngredients(extractOCRLines(text).join("\n"));
+  const list = normalizeIngredients(extractOCRLines(text).join(", "));
   if (!list.length) {
     alert("Chua tach duoc nguyen lieu tu OCR. Ban co the copy/paste vao o nhap tay.");
     return;
@@ -514,9 +512,9 @@ function classifyOCR() {
   });
 
   const ingEl = $("ingredientsText");
-  if (ingEl) ingEl.value = ingredients.join("\n");
+  if (ingEl) ingEl.value = ingredients.join(", ");
   const pantryEl = $("pantryText");
-  if (pantryEl) pantryEl.value = pantry.join("\n");
+  if (pantryEl) pantryEl.value = pantry.join(", ");
   updateShoppingList(lastResult);
 }
 
@@ -879,7 +877,7 @@ function applyRestore() {
     const data = JSON.parse(raw);
     if (data?.result) showResult(data.result);
     const ingEl = $("ingredientsText");
-    if (ingEl && Array.isArray(data?.ingredients)) ingEl.value = data.ingredients.join("\n");
+    if (ingEl && Array.isArray(data?.ingredients)) ingEl.value = data.ingredients.join(", ");
   } catch {
     // ignore bad restore payload
   }
@@ -918,7 +916,7 @@ function shuffleSuggestions() {
 async function generateRecipe(options = {}) {
   const { useLast = false, addHistory = true } = options;
   const ingEl = $("ingredientsText");
-  const raw = useLast ? lastIngredientsInput.join("\n") : ingEl?.value || "";
+  const raw = useLast ? lastIngredientsInput.join(", ") : ingEl?.value || "";
   const ingredients = useLast ? lastIngredientsInput.slice() : normalizeIngredients(raw);
 
   if (!ingredients.length) {
@@ -940,29 +938,25 @@ async function generateRecipe(options = {}) {
   }
   if (btnShuffle) btnShuffle.disabled = true;
 
-  let results = [];
-  const mode = "api";
-
-  if (mode === "api") {
-    try {
-      const payload = {
-        session_id: getSessionId(),
-        source: "manual",
-        ingredients,
-        constraints,
-      };
-      const resp = await fetch(`${getApiBase()}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      if (Array.isArray(data?.results)) results = data.results;
-      else if (data?.result) results = [data.result];
-    } catch (err) {
-      results = [];
-    }
+    let results = [];
+  try {
+    const payload = {
+      session_id: getSessionId(),
+      source: "manual",
+      ingredients,
+      constraints,
+    };
+    const resp = await fetch(`${getApiBase()}/api/suggest-recipes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    if (Array.isArray(data?.results)) results = data.results;
+    else if (data?.result) results = [data.result];
+  } catch (err) {
+    results = [];
   }
 
   if (!results.length) {
@@ -975,7 +969,6 @@ async function generateRecipe(options = {}) {
     alert("Khong the ket noi AI. Hay kiem tra backend va API key.");
     return;
   }
-
   const genBase = Date.now();
   results.forEach((item, idx) => {
     if (!item.generation_id) item.generation_id = genBase + idx;
@@ -1040,13 +1033,13 @@ async function runOCR() {
 
 function extractIngredientsFromOCR() {
   const text = $("ocrText")?.value || "";
-  const list = normalizeIngredients(extractOCRLines(text).join("\n"));
+  const list = normalizeIngredients(extractOCRLines(text).join(", "));
   if (!list.length) {
     alert("Chua co du lieu OCR.");
     return;
   }
   const ingEl = $("ingredientsText");
-  if (ingEl) ingEl.value = list.join("\n");
+  if (ingEl) ingEl.value = list.join(", ");
   updateShoppingList(lastResult);
 }
 
@@ -1142,7 +1135,7 @@ function bindQuickChips() {
       const current = normalizeIngredients(input.value);
       const exists = current.some((item) => item.toLowerCase() === value.toLowerCase());
       if (!exists) current.push(value);
-      input.value = current.join("\n");
+      input.value = current.join(", ");
     });
   });
 }
@@ -1288,8 +1281,8 @@ function setup() {
     const ingEl = $("ingredientsText");
     const pantryEl = $("pantryText");
     if (!ingEl || !pantryEl) return;
-    const combined = normalizeIngredients([ingEl.value, pantryEl.value].join("\n"));
-    ingEl.value = combined.join("\n");
+    const combined = normalizeIngredients([ingEl.value, pantryEl.value].join(", "));
+    ingEl.value = combined.join(", ");
     updateShoppingList(lastResult);
   });
 
@@ -1318,6 +1311,10 @@ function setup() {
 }
 
 document.addEventListener("DOMContentLoaded", setup);
+
+
+
+
 
 
 
