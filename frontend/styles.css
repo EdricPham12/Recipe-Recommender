@@ -753,6 +753,55 @@ body::after {
   transform: translateY(-2px);
   border-color: rgba(228, 87, 46, 0.4);
 }
+
+/* Page-specific brighter styling for the homepage form */
+
+/* Page-specific brighter styling for the homepage form (force overrides) */
+body[data-page="index"] .hero-card {
+  background: linear-gradient(160deg, #ffffff 0%, rgba(255, 250, 245, 0.95) 100%) !important;
+  border-color: rgba(36, 27, 21, 0.04) !important;
+  box-shadow: 0 18px 40px rgba(36, 27, 21, 0.06) !important;
+}
+
+body[data-page="index"] .topbar {
+  background: linear-gradient(180deg, #ffffff, rgba(255, 250, 245, 0.98)) !important;
+  border-color: rgba(36, 27, 21, 0.04) !important;
+}
+
+body[data-page="index"] .hero-input-wrap {
+  background: #ffffff !important;
+  border-color: rgba(36, 27, 21, 0.06) !important;
+}
+
+body[data-page="index"] .hero-input,
+body[data-page="index"] .input,
+body[data-page="index"] .textarea {
+  background: #ffffff !important;
+  border-color: rgba(36, 27, 21, 0.06) !important;
+}
+
+body[data-page="index"] .pill,
+body[data-page="index"] .chip,
+body[data-page="index"] .panel,
+body[data-page="index"] .quick-action {
+  background: #ffffff !important;
+  border-color: rgba(36, 27, 21, 0.06) !important;
+}
+
+body[data-page="index"] .btn-primary {
+  background: linear-gradient(180deg, #ff7043, #e4572e) !important;
+  border-color: rgba(228, 87, 46, 0.95) !important;
+}
+
+body[data-page="index"] .btn-secondary {
+  background: linear-gradient(180deg, #48b39a, #2a9d8f) !important;
+  border-color: rgba(42, 157, 143, 0.95) !important;
+}
+
+body[data-page="index"] .page-title {
+  color: #1f130f !important;
+}
+
 .suggestions-head {
   display: flex;
   align-items: flex-start;

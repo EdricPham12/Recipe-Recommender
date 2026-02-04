@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
-  <body>
+  <body data-page="index">
     <div class="shell">
       <aside class="sidebar">
         <div class="sidebar-brand">
@@ -22,27 +22,27 @@
         <nav class="sidebar-nav">
   <a class="nav-item nav-item-active" href="index.html">
     <span class="dot"></span>
-    Trang chu
+    Trang chủ
   </a>
   <a class="nav-item" href="scan.html">
     <span class="dot"></span>
-    Quet anh (AI)
+    Quét ảnh (AI)
   </a>
   <a class="nav-item" href="reviews.html">
     <span class="dot"></span>
-    Danh gia mon
+    Đánh giá món
   </a>
   <a class="nav-item" href="pantry.html">
     <span class="dot"></span>
-    Tu lanh
+    Tủ lạnh
   </a>
   <a class="nav-item" href="favorites.html">
     <span class="dot"></span>
-    Mon yeu thich
+    Món yêu thích
   </a>
   <a class="nav-item" href="history.html">
     <span class="dot"></span>
-    Lich su
+    Lịch sử
   </a>
 </nav>
         <div class="sidebar-footer">
@@ -192,12 +192,11 @@
                 <div>
                   <label class="label">Ngân sách</label>
                   <select id="budget" class="select select-sm">
-                    <option value="">Tuỳ món</option>
-                    <option value="low">Tiết kiệm</option>
-                    <option value="medium">Vừa</option>
-                    \
-                    <option value="high">Thoải mái</option>
-                  </select>
+                      <option value="">Tuỳ món</option>
+                      <option value="low">Tiết kiệm</option>
+                      <option value="medium">Vừa</option>
+                      <option value="high">Thoải mái</option>
+                    </select>
                 </div>
 
                 <div>
@@ -252,27 +251,27 @@
           </section>
 
           <section class="card quick-card">
-  <h2>Tac vu nhanh</h2>
+  <h2>Tác vụ nhanh</h2>
   <div class="quick-actions">
     <a class="quick-action" href="scan.html">
-      <h3>Quet anh</h3>
-      <p>OCR hinh anh/nhan thuc pham va tach nguyen lieu.</p>
+      <h3>Quét ảnh</h3>
+      <p>OCR hình ảnh/nhận thực phẩm và tách nguyên liệu.</p>
     </a>
     <a class="quick-action" href="reviews.html">
-      <h3>Danh gia mon</h3>
-      <p>Gui nhan xet de cai thien goi y.</p>
+      <h3>Đánh giá món</h3>
+      <p>Gửi nhận xét để cải thiện gợi ý.</p>
     </a>
     <a class="quick-action" href="#pantry">
-      <h3>Tu lanh</h3>
-      <p>Luu gia vi/mon co san de goi y chinh xac.</p>
+      <h3>Tủ lạnh</h3>
+      <p>Lưu gia vị/món có sẵn để gợi ý chính xác.</p>
     </a>
     <a class="quick-action" href="favorites.html">
-      <h3>Mon yeu thich</h3>
-      <p>Xem lai cac mon da luu.</p>
+      <h3>Món yêu thích</h3>
+      <p>Xem lại các món đã lưu.</p>
     </a>
     <a class="quick-action" href="history.html">
-      <h3>Lich su goi y</h3>
-      <p>Khoi phuc cac lan goi y truoc.</p>
+      <h3>Lịch sử gợi ý</h3>
+      <p>Khôi phục các lần gợi ý trước.</p>
     </a>
   </div>
 </section>
@@ -344,7 +343,7 @@
 
               <div class="result-footer">
   <div class="tips">
-    <h4>Meo</h4>
+    <h4>Mẹo</h4>
     <ul id="resultTips" class="list"></ul>
   </div>
   <div class="actions">
