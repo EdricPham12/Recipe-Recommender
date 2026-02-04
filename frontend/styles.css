@@ -756,28 +756,28 @@ body::after {
 
 /* Page-specific brighter styling for the homepage form */
 
-/* Page-specific brighter styling for the homepage form (force overrides) */
+/* Page-specific Cool Mint theme for the homepage */
 body[data-page="index"] .hero-card {
-  background: linear-gradient(160deg, #ffffff 0%, rgba(255, 250, 245, 0.95) 100%) !important;
-  border-color: rgba(36, 27, 21, 0.04) !important;
-  box-shadow: 0 18px 40px rgba(36, 27, 21, 0.06) !important;
+  background: linear-gradient(160deg, #f6fffb 0%, #eafaf5 100%) !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
+  box-shadow: 0 18px 40px rgba(38, 120, 100, 0.06) !important;
 }
 
 body[data-page="index"] .topbar {
-  background: linear-gradient(180deg, #ffffff, rgba(255, 250, 245, 0.98)) !important;
-  border-color: rgba(36, 27, 21, 0.04) !important;
+  background: linear-gradient(180deg, #f8fffd, #f0fff9) !important;
+  border-color: rgba(40, 167, 135, 0.04) !important;
 }
 
 body[data-page="index"] .hero-input-wrap {
-  background: #ffffff !important;
-  border-color: rgba(36, 27, 21, 0.06) !important;
+  background: #fbfffd !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
 }
 
 body[data-page="index"] .hero-input,
 body[data-page="index"] .input,
 body[data-page="index"] .textarea {
   background: #ffffff !important;
-  border-color: rgba(36, 27, 21, 0.06) !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
 }
 
 body[data-page="index"] .pill,
@@ -785,22 +785,84 @@ body[data-page="index"] .chip,
 body[data-page="index"] .panel,
 body[data-page="index"] .quick-action {
   background: #ffffff !important;
-  border-color: rgba(36, 27, 21, 0.06) !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
 }
 
+body[data-page="index"] .pill:hover,
+body[data-page="index"] .chip:hover {
+  border-color: rgba(40, 167, 135, 0.3) !important;
+  color: #104734 !important;
+}
+
+body[data-page="index"] .pill-active {
+  background: linear-gradient(180deg, rgba(40, 167, 135, 0.12), rgba(40, 167, 135, 0.06)) !important;
+  border-color: rgba(40, 167, 135, 0.5) !important;
+  color: #0b3a2c !important;
+}
+
+/* Keep primary CTA visible (warm) but make secondary mint to match theme */
 body[data-page="index"] .btn-primary {
   background: linear-gradient(180deg, #ff7043, #e4572e) !important;
   border-color: rgba(228, 87, 46, 0.95) !important;
 }
 
 body[data-page="index"] .btn-secondary {
-  background: linear-gradient(180deg, #48b39a, #2a9d8f) !important;
-  border-color: rgba(42, 157, 143, 0.95) !important;
+  background: linear-gradient(180deg, #5fd2b6, #2aa68f) !important;
+  border-color: rgba(40, 167, 135, 0.95) !important;
+  color: #003927 !important;
 }
 
 body[data-page="index"] .page-title {
-  color: #1f130f !important;
+  color: #0a2b22 !important;
 }
+
+/* Ensure all main cards and panels follow the Cool Mint look */
+body[data-page="index"] .card,
+body[data-page="index"] .quick-card,
+body[data-page="index"] .suggestions-card,
+body[data-page="index"] .result-card,
+body[data-page="index"] .pantry-card {
+  background: linear-gradient(180deg, #fbfffd, #f3fff8) !important;
+  border-color: rgba(40, 167, 135, 0.05) !important;
+  box-shadow: 0 16px 36px rgba(38, 120, 100, 0.05) !important;
+}
+
+body[data-page="index"] .panel {
+  background: linear-gradient(180deg, #ffffff, #f7fffb) !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
+}
+
+body[data-page="index"] .cook-tools {
+  background: linear-gradient(180deg, #ffffff, #f6fffb) !important;
+  border-color: rgba(40, 167, 135, 0.06) !important;
+}
+
+body[data-page="index"] .empty,
+body[data-page="index"] .hero-footer .empty,
+body[data-page="index"] .result-empty {
+  background: #ffffff !important;
+  border: 1px dashed rgba(40, 167, 135, 0.06) !important;
+  color: #0b3a2c !important;
+}
+
+/* Slightly lift the quick action cards to match hero depth */
+body[data-page="index"] .quick-action {
+  box-shadow: 0 10px 18px rgba(38, 120, 100, 0.04) !important;
+}
+
+/* Make inputs and selects consistent */
+body[data-page="index"] .input,
+body[data-page="index"] .select,
+body[data-page="index"] .textarea {
+  background: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(38,120,100,0.02) !important;
+}
+
+/* Fine-tune spacing for stacked sections */
+body[data-page="index"] .content-grid {
+  max-width: 980px !important;
+}
+
 
 .suggestions-head {
   display: flex;
