@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
@@ -61,10 +61,9 @@
         <header class="topbar">
           <div class="topbar-left">
             <p class="eyebrow">Quét ảnh nguyên liệu</p>
-            <h1 class="page-title">Đưa ảnh, AI nhận diện chữ trên nhãn.</h1>
+            <h1 class="page-title">Đưa ảnh, AI nhận diện nguyên liệu.</h1>
             <p class="page-sub">
-              Tải ảnh hóa đơn, nhãn thực phẩm hoặc giấy ghi chú. Hệ thống sẽ OCR tiếng Việt/Anh
-              và tách thành danh sách nguyên liệu cho bạn.
+              Tải ảnh nguyên liệu hoặc món ăn. Hệ thống sẽ nhận diện và gợi ý danh sách nguyên liệu cho bạn.
             </p>
           </div>
         </header>
@@ -74,18 +73,31 @@
             <div class="two-col">
               <div class="panel">
                 <div class="panel-title">Ảnh nguyên liệu</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+                  <button id="btnOpenCam" class="btn btn-ghost" type="button">Mở camera</button>
+                  <button id="btnCapture" class="btn btn-primary" type="button" disabled>Chụp ảnh</button>
+                  <button id="btnIdentify" class="btn btn-secondary" type="button">Nhận diện món (AI)</button>
+                  <button id="btnIdentifyServer" class="btn btn-primary" type="button">Nhận diện món (Server)</button>
+                </div>
+                <video id="video" autoplay playsinline style="max-width:100%;border-radius:8px;display:none;border:1px solid var(--border)"></video>
+                <canvas id="captureCanvas" style="display:none"></canvas>
+                <div id="previewWrap" style="margin-top:8px;min-height:180px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.4)">
+                  <div id="previewPlaceholder" class="hint" style="text-align:center;padding:12px">
+                    Chưa có ảnh. Hãy chọn tệp hoặc chụp ảnh để xem trước.
+                  </div>
+                </div>
                 <input id="imageInput" type="file" accept="image/*" />
-                <div class="hint">Ảnh rõ, đủ sáng; ưu tiên chụp gần phần chữ nguyên liệu.</div>
+                <div class="hint">Ảnh rõ, đủ sáng. Bấm "Nhận diện món" để lấy danh sách nguyên liệu.</div>
 
-                <div class="ocr-row">
+                <div class="ocr-row" style="display:none">
                   <button id="btnRunOCR" class="btn btn-secondary" type="button">Chạy OCR</button>
                   <div id="ocrStatus" class="status">Chưa chạy</div>
                 </div>
 
-                <label class="label">Kết quả OCR (có thể sửa)</label>
-                <textarea id="ocrText" class="textarea" rows="9" placeholder="Văn bản OCR sẽ hiển thị ở đây..."></textarea>
+                <label class="label" style="display:none">Kết quả OCR (có thể sửa)</label>
+                <textarea id="ocrText" class="textarea" rows="9" placeholder="Văn bản OCR sẽ hiển thị ở đây..." style="display:none"></textarea>
 
-                <div class="row-actions">
+                <div class="row-actions" style="display:none">
                   <button id="btnExtractIngredients" class="btn btn-ghost" type="button">
                     Tách nguyên liệu từ OCR →
                   </button>
@@ -93,6 +105,8 @@
                     Phân loại nguyên liệu + gia vị
                   </button>
                 </div>
+
+                <div id="classifyResults" style="margin-top:10px"></div>
               </div>
 
               <div class="panel">
@@ -102,14 +116,14 @@
                   id="ingredientsText"
                   class="textarea"
                   rows="8"
-                  placeholder="Kết quả sau khi tách từ OCR sẽ xuất hiện ở đây..."
+                  placeholder="Kết quả sau khi nhận diện sẽ xuất hiện ở đây..."
                 ></textarea>
                 <label class="label">Gia vị/đồ khô</label>
                 <textarea
                   id="pantryText"
                   class="textarea"
                   rows="6"
-                  placeholder="Gia vị tách từ OCR sẽ xuất hiện ở đây..."
+                  placeholder="Gia vị tách từ nhận diện sẽ xuất hiện ở đây..."
                 ></textarea>
                 <div class="row-actions">
                   <button id="btnSavePantry" class="btn btn-secondary" type="button">Lưu vào tủ lạnh</button>
@@ -127,6 +141,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+    <script src="./scan.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
