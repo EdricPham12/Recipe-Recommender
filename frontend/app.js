@@ -20,7 +20,8 @@ let activeResults = [];
 let timerInterval = null;
 let remainingSeconds = 0;
 let currentRating = 0;
-let lastGenerationId = null;const PANTRY_KEYWORDS = [
+let lastGenerationId = null;
+const PANTRY_KEYWORDS = [
   "muoi",
   "duong",
   "hat nem",
@@ -319,7 +320,7 @@ function getConstraints() {
 
   const allergiesRaw = $("allergies")?.value || "";
   const allergies = allergiesRaw
-    .split(/,|/g)
+    .split(/[\n,]+/g)
     .map((s) => s.trim())
     .filter(Boolean);
 
@@ -1311,7 +1312,6 @@ function setup() {
 }
 
 document.addEventListener("DOMContentLoaded", setup);
-
 
 
 
