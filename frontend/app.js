@@ -1,5 +1,5 @@
 ﻿/* Cook-AI frontend (no build tools) */
-
+console.log("APP JS LOADED OK");
 const API_BASE_DEFAULT = "http://127.0.0.1:8000";
 const LS = {
   sessionId: "cookai.sessionId",
