@@ -5,6 +5,7 @@ from flask_cors import CORS
 import json
 import os
 import re
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -28,6 +29,52 @@ def _extract_json(text: str):
         return json.loads(match.group(0))
     except Exception:
         return None
+
+
+def _dedupe_results(results):
+    seen = set()
+    out = []
+    for r in results:
+        title = (r.get('title') or 'Mon goi y').strip()
+        key = title.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(r)
+    return out
+
+
+def _fallback_recipes(ingredients, count):
+    styles = ["Xao", "Kho", "Canh", "Nuong", "Chien", "Hap", "Sup", "Salad", "Sot", "Rim"]
+    bases = [s for s in ingredients if s]
+    if not bases:
+        bases = ["rau cu"]
+    main = bases[0]
+    out = []
+    for i in range(max(0, count)):
+        style = styles[i % len(styles)]
+        title = f"{style} {main}"
+        used = []
+        for item in bases:
+            if item.lower() not in [x.lower() for x in used]:
+                used.append(item)
+            if len(used) >= 5:
+                break
+        out.append({
+            'title': title,
+            'ingredients': used,
+            'steps': [
+                "So che nguyen lieu, cat vua an.",
+                "Lam nong chao, phi thom hanh/toi neu co.",
+                f"Cho {main} vao che bien, nem muoi/nuoc mam vua an.",
+                "Hoan thien va dung nong."
+            ],
+            'tips': ["Co the dieu chinh gia vi theo khau vi."],
+            'time': {'prep_min': 8 + i, 'cook_min': 12 + i},
+            'servings': 2,
+            'difficulty': 'easy'
+        })
+    return out
 
 
 @app.after_request
@@ -111,7 +158,7 @@ def suggest_recipes():
         return jsonify({'error': 'no ingredients provided'}), 400
 
     try:
-        count = int(data.get('count') or 0)
+        count = int(data.get('count') or (data.get('constraints') or {}).get('recipe_count') or 0)
     except Exception:
         count = 0
 
@@ -123,12 +170,20 @@ def suggest_recipes():
             count = 2
         else:
             count = 3
-    count = max(1, min(3, count))
+    count = max(1, count)
 
     prompt = (
-        f"Ban la dau bep. Hay goi y {count} mon an phu hop tu danh sach nguyen lieu. "
+        f"Ban la dau bep. Hay goi y DUNG {count} mon an phu hop tu danh sach nguyen lieu. "
+        "Moi mon can khac nhau ve phong cach (xao, kho, canh, nuong, hap, salad, sup, chien, sot...). "
+        "Tranh lap lai ten mon. Khong duoc tra ve it hon so luong yeu cau. "
         "Uu tien mon Viet, huong dan vua phai (khong qua dai), de lam. "
-        "Tra ve JSON thuan theo schema: {\"results\":[{\"title\":string,\"ingredients\":[string],\"steps\":[string],\"tips\":[string],\"time\":{\"prep_min\":number,\"cook_min\":number},\"servings\":number,\"difficulty\":\"easy|medium|hard\"}]}. "
+        "Tra ve JSON thuan theo schema: "
+        "{\"results\":[{\"title\":string,"
+        "\"ingredients\":[{\"name\":string,\"qty\":string}],"
+        "\"steps\":[string],\"tips\":[string],"
+        "\"time\":{\"prep_min\":number,\"cook_min\":number},"
+        "\"servings\":number,\"difficulty\":\"easy|medium|hard\"}]}. "
+        "Trong ingredients, them so luong uoc tinh (vd: 200g, 1 muong, 2 qua). "
         "Khong them giai thich."
     )
 
@@ -149,16 +204,32 @@ def suggest_recipes():
         for r in results:
             if not isinstance(r, dict):
                 continue
+            raw_ing = r.get('ingredients') or []
+            ingredients = []
+            if isinstance(raw_ing, list):
+                for it in raw_ing:
+                    if isinstance(it, dict):
+                        name = it.get('name') or it.get('ingredient') or ''
+                        qty = it.get('qty') or it.get('quantity') or ''
+                        if name:
+                            ingredients.append({'name': name, 'qty': qty})
+                    elif isinstance(it, str):
+                        ingredients.append({'name': it, 'qty': ''})
             norm.append({
                 'title': r.get('title') or 'Mon goi y',
-                'ingredients': r.get('ingredients') or [],
+                'ingredients': ingredients,
                 'steps': r.get('steps') or [],
                 'tips': r.get('tips') or [],
                 'time': r.get('time') or {},
                 'servings': r.get('servings') or 2,
                 'difficulty': r.get('difficulty') or 'easy'
             })
-        return jsonify({'results': norm})
+        norm = _dedupe_results(norm)
+        if len(norm) < count:
+            need = count - len(norm)
+            fillers = _fallback_recipes(ingredients, need)
+            norm.extend(_dedupe_results(fillers))
+        return jsonify({'results': norm[:count]})
     except Exception as e:
         print('OpenAI suggest call failed', e)
         return jsonify({'error': 'openai suggest failed'}), 500
