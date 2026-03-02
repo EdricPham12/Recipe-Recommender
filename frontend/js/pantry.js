@@ -28,15 +28,6 @@
     return out;
   }
 
-  function toKey(text) {
-    return String(text || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
   function loadPantryText() {
     return localStorage.getItem(LS.pantry) || "";
   }
@@ -63,64 +54,23 @@
     if (navName) navName.textContent = user?.name || "Đăng nhập";
   }
 
-  function getAvailableItems() {
-    const pantryText = $("pantryText")?.value || "";
-    return normalizeIngredients(pantryText).map((x) => toKey(x));
-  }
-
-  function isAvailableIngredient(name, available) {
-    const key = toKey(name);
-    return available.some((item) => item === key || key.includes(item) || item.includes(key));
-  }
-
-  function updateShoppingList() {
-    const missingHost = $("missingList");
-    const haveHost = $("haveList");
-    if (!missingHost || !haveHost) return;
-    missingHost.innerHTML = "";
-    haveHost.innerHTML = "";
-
-    const ingredientsText = $("ingredientsText")?.value || "";
-    const ingredients = normalizeIngredients(ingredientsText);
-
-    if (!ingredients.length) {
-      missingHost.innerHTML = `<li>Chưa có dữ liệu.</li>`;
-      haveHost.innerHTML = `<li>Chưa có dữ liệu.</li>`;
+  function renderPantrySavedList() {
+    const host = $("pantrySavedList");
+    if (!host) return;
+    const items = normalizeIngredients(loadPantryText());
+    host.innerHTML = "";
+    if (!items.length) {
+      const li = document.createElement("li");
+      li.textContent = "Chưa có dữ liệu tủ lạnh.";
+      host.appendChild(li);
       return;
     }
-
-    const available = getAvailableItems();
-    const missing = [];
-    const have = [];
-
-    ingredients.forEach((name) => {
-      if (isAvailableIngredient(name, available)) have.push(name);
-      else missing.push(name);
+    items.forEach((name) => {
+      const li = document.createElement("li");
+      li.className = "pantry-list-item";
+      li.innerHTML = `<label class="pantry-item"><input type="checkbox" data-name="${name}" /> ${name}</label>`;
+      host.appendChild(li);
     });
-
-    if (!missing.length) {
-      const li = document.createElement("li");
-      li.textContent = "Bạn đã có đủ nguyên liệu!";
-      missingHost.appendChild(li);
-    } else {
-      missing.forEach((name) => {
-        const li = document.createElement("li");
-        li.textContent = name;
-        missingHost.appendChild(li);
-      });
-    }
-
-    if (!have.length) {
-      const li = document.createElement("li");
-      li.textContent = "Chưa xác định.";
-      haveHost.appendChild(li);
-    } else {
-      have.forEach((name) => {
-        const li = document.createElement("li");
-        li.textContent = name;
-        haveHost.appendChild(li);
-      });
-    }
   }
 
   function performLogout() {
@@ -149,27 +99,39 @@
       });
 
     $("btnSavePantry")?.addEventListener("click", () => {
-      savePantryText($("pantryText")?.value || "");
-      updateShoppingList();
+      const ingEl = $("ingredientsText");
+      const pantryEl = $("pantryText");
+      const ingredients = normalizeIngredients(ingEl?.value || "");
+      const pantryInput = normalizeIngredients(pantryEl?.value || "");
+      const stored = normalizeIngredients(loadPantryText());
+      const merged = normalizeIngredients([...stored, ...ingredients, ...pantryInput].join(", "));
+      savePantryText(merged.join(", "));
+      if (pantryEl) pantryEl.value = "";
+      if (ingEl) ingEl.value = "";
+      renderPantrySavedList();
       alert("Đã lưu tủ lạnh.");
     });
 
-    $("btnUsePantry")?.addEventListener("click", () => {
-      const ingEl = $("ingredientsText");
-      const pantryEl = $("pantryText");
-      if (!ingEl || !pantryEl) return;
-      const combined = normalizeIngredients([ingEl.value, pantryEl.value].join(", "));
-      ingEl.value = combined.join(", ");
-      updateShoppingList();
+    $("btnRemoveSelected")?.addEventListener("click", () => {
+      const host = $("pantrySavedList");
+      if (!host) return;
+      const checks = Array.from(host.querySelectorAll("input[type='checkbox'][data-name]"));
+      const selected = checks.filter((c) => c.checked).map((c) => c.getAttribute("data-name") || "");
+      if (!selected.length) {
+        alert("Bạn chưa chọn nguyên liệu để xóa.");
+        return;
+      }
+      const stored = normalizeIngredients(loadPantryText());
+      const removeKeys = selected.map((x) => x.toLowerCase());
+      const next = stored.filter((x) => !removeKeys.includes(x.toLowerCase()));
+      savePantryText(next.join(", "));
+      renderPantrySavedList();
     });
 
     const pantryEl = $("pantryText");
-    if (pantryEl) pantryEl.value = loadPantryText();
+    if (pantryEl) pantryEl.value = "";
 
-    $("ingredientsText")?.addEventListener("input", updateShoppingList);
-    $("pantryText")?.addEventListener("input", updateShoppingList);
-
-    updateShoppingList();
+    renderPantrySavedList();
   }
 
   document.addEventListener("DOMContentLoaded", setupPantryPage);
