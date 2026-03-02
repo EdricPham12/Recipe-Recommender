@@ -1363,3 +1363,85 @@ code {
   font-size: 14px;
   opacity: 0.9;
 }
+
+/* settings profile */
+.profile-card {
+  padding: 18px;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.avatar-block {
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.avatar-preview {
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd6a5, #fdffb6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #4a2a20;
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(36, 27, 21, 0.12);
+}
+
+.profile-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.theme-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-pill {
+  border-radius: 999px;
+  border: 1px solid rgba(36, 27, 21, 0.2);
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.theme-pill.active {
+  border-color: rgba(228, 87, 46, 0.6);
+  background: rgba(228, 87, 46, 0.12);
+}
+
+@media (min-width: 980px) {
+  .profile-body {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+}
+
