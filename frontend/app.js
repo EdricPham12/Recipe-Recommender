@@ -272,10 +272,13 @@ function renderFavorites() {
   host.innerHTML = items
     .map((it, idx) => {
       const when = new Date(it.createdAt).toLocaleString();
+      const ingredients = Array.isArray(it.ingredients)
+        ? it.ingredients
+        : normalizeIngredients(String(it.ingredients || ""));
       return `
         <div class="history-item">
           <div class="title">${escapeHtml(it.title || "Mon goi y")}</div>
-          <div class="sub">${escapeHtml(when)} · ${escapeHtml((it.ingredients || []).join(", "))}</div>
+          <div class="sub">${escapeHtml(when)} · ${escapeHtml(ingredients.join(", "))}</div>
           <div class="row">
             <button class="btn btn-ghost" data-fav-action="load" data-idx="${idx}">Xem chi tiet</button>
             <button class="btn btn-ghost" data-fav-action="delete" data-idx="${idx}">Bo thich</button>
@@ -892,7 +895,7 @@ function saveFavorite() {
   items.unshift({
     createdAt: Date.now(),
     title: lastResult.title || "Mon goi y",
-    ingredients: lastIngredientsInput,
+    ingredients: Array.isArray(lastIngredientsInput) ? [...lastIngredientsInput] : [],
     result: lastResult,
   });
   saveFavorites(items);
@@ -1235,8 +1238,10 @@ function setupSettings() {
   if (recipeCountMain) recipeCountMain.value = String(loadRecipeCount());
 }
 
-
-
+document.addEventListener("DOMContentLoaded", () => {
+  updateUserUI();
+  if ($("favorites")) renderFavorites();
+});
 
 
 
