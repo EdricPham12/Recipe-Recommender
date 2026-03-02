@@ -78,13 +78,14 @@
           <section class="card">
             <div class="two-col">
               <div class="panel">
-                <div class="panel-title">Nguyên liệu hiện có</div>
+                <div class="panel-title">Nguyên liệu</div>
                 <textarea
                   id="ingredientsText"
                   class="textarea"
                   rows="6"
                   placeholder="Ví dụ: Trứng, Rau cải, Cá hồi..."
                 ></textarea>
+                <div class="hint" style="margin-top: 8px">Nhập nguyên liệu muốn lưu vào tủ lạnh.</div>
               </div>
               <div class="panel">
                 <div class="panel-title">Gia vị/đồ khô</div>
@@ -95,26 +96,17 @@
                   placeholder="Ví dụ: Nước mắm, Muối, Dầu ăn..."
                 ></textarea>
                 <div class="row-actions">
-                  <button id="btnSavePantry" class="btn btn-secondary" type="button"><span class="icon">💾</span>Lưu tủ lạnh</button>
-                  <button id="btnUsePantry" class="btn btn-ghost" type="button"><span class="icon">➕</span>Thêm vào nguyên liệu</button>
+                  <button id="btnSavePantry" class="btn btn-secondary" type="button"><span class="icon">💾</span>Thêm vào tủ lạnh</button>
+                </div>
+                <div class="hint" style="margin-top: 8px">Danh sách tủ lạnh đã lưu:</div>
+                <ul id="pantrySavedList" class="list"></ul>
+                <div class="row-actions" style="margin-top: 8px">
+                  <button id="btnRemoveSelected" class="btn btn-ghost" type="button">
+                    <span class="icon">🗑</span>Xóa mục đã chọn
+                  </button>
                 </div>
               </div>
             </div>
-          </section>
-
-          <section class="card">
-            <h2>Cần mua thêm</h2>
-            <div class="split-list">
-              <div>
-                <div class="label">Thiếu</div>
-                <ul id="missingList" class="list"></ul>
-              </div>
-              <div>
-                <div class="label">Đã có</div>
-                <ul id="haveList" class="list"></ul>
-              </div>
-            </div>
-            <div class="hint">Danh sách cập nhật theo nguyên liệu bạn nhập và tủ lạnh.</div>
           </section>
         </main>
       </div>
