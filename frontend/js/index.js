@@ -109,6 +109,14 @@
     localStorage.setItem(LS.recipeCount, String(Math.max(1, val)));
   }
 
+  function loadPantryText() {
+    return localStorage.getItem(LS.pantry) || "";
+  }
+
+  function savePantryText(text) {
+    localStorage.setItem(LS.pantry, text || "");
+  }
+
   function loadUser() {
     try {
       return JSON.parse(localStorage.getItem(LS.user) || "null");
@@ -129,6 +137,15 @@
     const user = loadUser();
     const navName = document.querySelector(".sidebar-user-name");
     if (navName) navName.textContent = user?.name || "Đăng nhập";
+  }
+
+  function toKey(text) {
+    return String(text || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function formatMinutes(min) {
@@ -211,6 +228,82 @@
     const raw = main ? Number(main.value) : loadRecipeCount();
     if (!Number.isFinite(raw) || raw <= 0) return loadRecipeCount();
     return Math.max(1, raw);
+  }
+
+  function renderList(el, items, emptyText) {
+    if (!el) return;
+    el.innerHTML = "";
+    if (!items.length) {
+      const li = document.createElement("li");
+      li.textContent = emptyText;
+      el.appendChild(li);
+      return;
+    }
+    items.forEach((name) => {
+      const li = document.createElement("li");
+      li.textContent = name;
+      el.appendChild(li);
+    });
+  }
+
+  function updateShoppingList() {
+    const pantryListEl = $("pantryList");
+    const missingEl = $("missingList");
+    const haveEl = $("haveList");
+
+    const pantryItems = normalizeIngredients(loadPantryText());
+    renderList(pantryListEl, pantryItems, "Chưa có dữ liệu tủ lạnh.");
+
+    const ingText = $("ingredientsText")?.value || "";
+    const ingredients = normalizeIngredients(ingText);
+    if (!ingredients.length) {
+      renderList(missingEl, [], "Nhập nguyên liệu để kiểm tra.");
+      renderList(haveEl, [], "Chưa có dữ liệu.");
+      return;
+    }
+
+    const pantryKeys = pantryItems.map((x) => toKey(x));
+    const missing = [];
+    const have = [];
+
+    ingredients.forEach((item) => {
+      const key = toKey(item);
+      const matched = pantryKeys.some((p) => p === key || p.includes(key) || key.includes(p));
+      if (matched) have.push(item);
+      else missing.push(item);
+    });
+
+    renderList(missingEl, missing, "Bạn đã có đủ nguyên liệu.");
+    renderList(haveEl, have, "Chưa xác định.");
+  }
+
+  function renderRecipePantryStatus(result) {
+    const haveEl = $("recipeHaveList");
+    const missingEl = $("recipeMissingList");
+    if (!haveEl || !missingEl) return;
+
+    const pantryItems = normalizeIngredients(loadPantryText());
+    if (!result || !Array.isArray(result.ingredients) || !result.ingredients.length) {
+      renderList(haveEl, [], "Chưa có dữ liệu.");
+      renderList(missingEl, [], "Chưa có dữ liệu.");
+      return;
+    }
+
+    const pantryKeys = pantryItems.map((x) => toKey(x));
+    const have = [];
+    const missing = [];
+
+    result.ingredients.forEach((it) => {
+      const name = typeof it === "string" ? it : it.name || "";
+      if (!name) return;
+      const key = toKey(name);
+      const matched = pantryKeys.some((p) => p === key || p.includes(key) || key.includes(p));
+      if (matched) have.push(name);
+      else missing.push(name);
+    });
+
+    renderList(haveEl, have, "Chưa có dữ liệu.");
+    renderList(missingEl, missing, "Bạn đã có đủ nguyên liệu.");
   }
 
   function getConstraints() {
@@ -307,6 +400,7 @@
 
     updateStepsProgress();
     setTimerFromResult(result);
+    renderRecipePantryStatus(result);
   }
 
   function updateStepsProgress() {
@@ -539,6 +633,8 @@
     $("resultEmpty")?.classList.remove("hidden");
     $("suggestionsShell")?.classList.add("hidden");
     resetTimer();
+    updateShoppingList();
+    renderRecipePantryStatus(null);
   }
 
   function setActivePill(btn) {
@@ -629,6 +725,20 @@
     $("btnTimerPause")?.addEventListener("click", pauseTimer);
     $("btnTimerReset")?.addEventListener("click", resetTimer);
 
+    $("btnSaveToPantry")?.addEventListener("click", () => {
+      const ingText = $("ingredientsText")?.value || "";
+      const ingredients = normalizeIngredients(ingText);
+      if (!ingredients.length) {
+        alert("Bạn hãy nhập nguyên liệu trước.");
+        return;
+      }
+      const pantryItems = normalizeIngredients(loadPantryText());
+      const merged = normalizeIngredients([...pantryItems, ...ingredients].join(", "));
+      savePantryText(merged.join(", "));
+      updateShoppingList();
+      alert("Đã lưu vào tủ lạnh.");
+    });
+
     const recipeCountMain = $("recipeCountMain");
     if (recipeCountMain) {
       recipeCountMain.value = String(loadRecipeCount());
@@ -636,6 +746,9 @@
     }
 
     applyRestore();
+    updateShoppingList();
+    $("ingredientsText")?.addEventListener("input", updateShoppingList);
+    window.addEventListener("focus", updateShoppingList);
   }
 
   document.addEventListener("DOMContentLoaded", setupIndexPage);
