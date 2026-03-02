@@ -1349,3 +1349,20 @@ code {
   object-fit: cover;
 }
 
+
+/* Recipe thumbnails */
+/* button icons */
+.btn .icon {
+  margin-right: 6px;
+  display: inline-block;
+  transform: translateY(-1px);
+  font-size: 14px;
+}
+
+/* sidebar icons */
+.nav-item .icon {
+  margin-right: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+

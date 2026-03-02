@@ -187,7 +187,7 @@
             <div class="title">${escapeHtml(item.title || "Món gợi ý")}</div>
             <div class="meta">${escapeHtml(recipeMetaLine(item) || "Thời gian linh hoạt")}</div>
             <div class="recipe-tags">${tags}</div>
-            <button class="btn btn-ghost" type="button" data-recipe-open="${idx}">Xem chi tiết</button>
+            <button class="btn btn-ghost" type="button" data-recipe-open="${idx}"><span class="icon">🔎</span>Xem chi tiết</button>
           </div>
         `;
       })
