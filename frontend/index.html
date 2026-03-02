@@ -22,26 +22,32 @@
         <nav class="sidebar-nav">
   <a class="nav-item nav-item-active" href="index.html">
     <span class="dot"></span>
+    <span class="icon">🏠</span>
     Trang chủ
   </a>
   <a class="nav-item" href="scan.html">
     <span class="dot"></span>
+    <span class="icon">📷</span>
     Quét ảnh (AI)
   </a>
   <a class="nav-item" href="reviews.html">
     <span class="dot"></span>
+    <span class="icon">⭐</span>
     Đánh giá món
   </a>
   <a class="nav-item" href="pantry.html">
     <span class="dot"></span>
+    <span class="icon">🧊</span>
     Tủ lạnh
   </a>
   <a class="nav-item" href="favorites.html">
     <span class="dot"></span>
+    <span class="icon">❤️</span>
     Món yêu thích
   </a>
   <a class="nav-item" href="history.html">
     <span class="dot"></span>
+    <span class="icon">🕘</span>
     Lịch sử
   </a>
 </nav>
@@ -69,8 +75,8 @@
           </div>
           <div class="topbar-right">
             <div class="topbar-actions">
-              <button id="btnClear" class="btn btn-ghost" type="button">Làm mới</button>
-              <button id="btnGenerate" class="btn btn-primary" type="button">Gợi ý món ngay</button>
+              <button id="btnClear" class="btn btn-ghost" type="button"><span class="icon">↺</span>Làm mới</button>
+              <button id="btnGenerate" class="btn btn-primary" type="button"><span class="icon">✨</span>Gợi ý món ngay</button>
             </div>
           </div>
         </header>
@@ -257,7 +263,7 @@
                 <p class="page-sub">Chọn 1 món để xem công thức chi tiết.</p>
               </div>
               <div class="suggestions-actions">
-                <button id="btnShuffle" class="btn btn-ghost" type="button">Làm mới gợi ý</button>
+                <button id="btnShuffle" class="btn btn-ghost" type="button"><span class="icon">🔀</span>Làm mới gợi ý</button>
               </div>
             </div>
 
@@ -292,6 +298,17 @@
                     </div>
                   </div>
 
+                  <div class="result-cols pantry-detail">
+                    <div>
+                      <h4>Trong tủ lạnh</h4>
+                      <ul id="recipeHaveList" class="list"></ul>
+                    </div>
+                    <div>
+                      <h4>Cần mua thêm</h4>
+                      <ul id="recipeMissingList" class="list"></ul>
+                    </div>
+                  </div>
+
                   <div class="cook-tools">
                     <div class="cook-tool">
                       <h4>Checklist nấu ăn</h4>
@@ -312,9 +329,9 @@
                         <div id="timerDisplay" class="timer-display">15:00</div>
                       </div>
                       <div class="timer-actions">
-                        <button id="btnTimerStart" class="btn btn-secondary" type="button">Bắt đầu</button>
-                        <button id="btnTimerPause" class="btn btn-ghost" type="button">Tạm dừng</button>
-                        <button id="btnTimerReset" class="btn btn-ghost" type="button">Reset</button>
+                        <button id="btnTimerStart" class="btn btn-secondary" type="button"><span class="icon">▶</span>Bắt đầu</button>
+                        <button id="btnTimerPause" class="btn btn-ghost" type="button"><span class="icon">⏸</span>Tạm dừng</button>
+                        <button id="btnTimerReset" class="btn btn-ghost" type="button"><span class="icon">↺</span>Reset</button>
                       </div>
                     </div>
                   </div>
@@ -325,8 +342,8 @@
                       <ul id="resultTips" class="list"></ul>
                     </div>
                     <div class="actions">
-                      <a class="btn btn-ghost" href="reviews.html">Danh gia</a>
-                      <button id="btnSave" class="btn btn-secondary" type="button">Luu mon</button>
+                      <a class="btn btn-ghost" href="reviews.html"><span class="icon">⭐</span>Đánh giá</a>
+                      <button id="btnSave" class="btn btn-secondary" type="button"><span class="icon">💾</span>Lưu món</button>
                     </div>
                   </div>
                 </article>

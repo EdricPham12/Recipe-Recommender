@@ -1349,3 +1349,56 @@ code {
   object-fit: cover;
 }
 
+
+/* Recipe thumbnails */
+/* button icons */
+.btn .icon {
+  margin-right: 6px;
+  display: inline-block;
+  transform: translateY(-1px);
+  font-size: 14px;
+}
+
+/* sidebar icons */
+.nav-item .icon {
+  margin-right: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+
+/* pantry card */
+.pantry-card .pantry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.pantry-card .pantry-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pantry-card .two-col {
+  gap: 16px;
+}
+
+/* pantry detail in recipe */
+.pantry-detail {
+  margin-top: 14px;
+}
+
+/* result footer spacing */
+.result-footer {
+  gap: 16px;
+}
+
+.result-footer .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+

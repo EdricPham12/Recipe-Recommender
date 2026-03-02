@@ -1349,3 +1349,27 @@ code {
   object-fit: cover;
 }
 
+/* button icons */
+.btn .icon {
+  margin-right: 6px;
+  display: inline-block;
+  transform: translateY(-1px);
+  font-size: 14px;
+}
+
+/* sidebar icons */
+.nav-item .icon {
+  margin-right: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.pantry-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pantry-item input[type="checkbox"] {
+  margin-right: 6px;
+}
