@@ -65,6 +65,7 @@ LABEL_SPECS: list[dict[str, Any]] = [
     {"name": "dua hau", "category": "nguyen_lieu", "aliases": ["dua hau", "watermelon"]},
     {"name": "tao", "category": "nguyen_lieu", "aliases": ["tao", "apple"]},
     {"name": "chuoi", "category": "nguyen_lieu", "aliases": ["chuoi", "banana"]},
+    {"name": "banh mi", "category": "nguyen_lieu", "aliases": ["banh mi", "bread", "baguette", "vietnamese baguette", "loaf bread"]},
     {"name": "toi", "category": "gia_vi", "aliases": ["toi", "garlic"]},
     {"name": "hanh kho", "category": "gia_vi", "aliases": ["hanh kho", "shallot", "dried onion"]},
     {"name": "ot", "category": "gia_vi", "aliases": ["ot", "chili", "pepper"]},
@@ -115,6 +116,31 @@ def _extract_json(text: str) -> dict[str, Any] | None:
         return json.loads(match.group(0))
     except Exception:
         return None
+
+
+def _fallback_recipe_results(ingredients: list[str], count: int) -> list[dict[str, Any]]:
+    base = [x for x in ingredients if x][:6]
+    main = base[0] if base else "nguyen lieu"
+    results: list[dict[str, Any]] = []
+    styles = ["xao", "chien", "canh", "nuong", "hap", "salad"]
+    for i in range(max(1, count)):
+        style = styles[i % len(styles)]
+        results.append(
+            {
+                "title": f"{main.title()} {style}",
+                "ingredients": base,
+                "steps": [
+                    "So che nguyen lieu va cat vua an.",
+                    f"Che bien theo kieu {style} den khi chin.",
+                    "Niem lai vua an va trinh bay.",
+                ],
+                "tips": ["Them hanh toi, tieu de day mui va ngon hon."],
+                "time": {"prep_min": 10, "cook_min": 15},
+                "servings": 2,
+                "difficulty": "easy",
+            }
+        )
+    return results
 
 
 class SegmentationService:
@@ -600,9 +626,6 @@ def api_identify_food(payload: dict[str, Any]):
 
 @app.post("/api/suggest-recipes")
 def api_suggest_recipes(payload: dict[str, Any]):
-    if openai_client is None:
-        raise HTTPException(status_code=500, detail="OpenAI client not configured.")
-
     raw_ingredients = payload.get("ingredients")
     if isinstance(raw_ingredients, str):
         ingredients = [s.strip() for s in raw_ingredients.split(",") if s.strip()]
@@ -637,6 +660,9 @@ def api_suggest_recipes(payload: dict[str, Any]):
     )
 
     try:
+        if openai_client is None:
+            return {"results": _fallback_recipe_results(ingredients, count), "source": "fallback"}
+
         resp = openai_client.responses.create(
             model="gpt-4.1-mini",
             input=[{
@@ -645,6 +671,7 @@ def api_suggest_recipes(payload: dict[str, Any]):
                     {"type": "input_text", "text": prompt + "\nNguyen lieu: " + ", ".join(ingredients)},
                 ],
             }],
+            timeout=25,
         )
         text = (resp.output_text or "").strip()
         parsed = _extract_json(text) or {}
@@ -663,10 +690,12 @@ def api_suggest_recipes(payload: dict[str, Any]):
                 "servings": r.get("servings") or 2,
                 "difficulty": r.get("difficulty") or "easy",
             })
-        return {"results": norm}
+        if not norm:
+            return {"results": _fallback_recipe_results(ingredients, count), "source": "fallback"}
+        return {"results": norm, "source": "openai"}
     except Exception as e:
         print("OpenAI suggest call failed", e)
-        raise HTTPException(status_code=500, detail="openai suggest failed")
+        return {"results": _fallback_recipe_results(ingredients, count), "source": "fallback"}
 
 
 @app.get("/favorites/{user_id}")

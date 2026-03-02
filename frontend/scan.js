@@ -454,11 +454,11 @@
     const form = new FormData();
     const views = buildMultiViewDataUrls(dataUrl, img);
     views.forEach((viewUrl, idx)=> form.append('images', dataUrlToBlob(viewUrl), 'scan_' + (idx + 1) + '.jpg'));
-    form.append('confidence_threshold', '0.66');
-    form.append('fusion_mode', 'voting');
+    form.append('confidence_threshold', '0.42');
+    form.append('fusion_mode', 'mean');
     form.append('return_annotated', 'false');
-    form.append('reject_margin', '0.14');
-    form.append('top_k_per_crop', '5');
+    form.append('reject_margin', '0.03');
+    form.append('top_k_per_crop', '3');
 
     // Prefer new endpoint. If unavailable, fallback to legacy API.
     const newUrl = `${apiBase}/api/smartcook/recognize`;
