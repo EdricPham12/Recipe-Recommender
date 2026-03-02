@@ -80,6 +80,7 @@
 
   function setupPantryPage() {
     updateUserUI();
+    let editMode = false;
 
     const navSettings = $("btnSettingsNav");
     if (navSettings) navSettings.addEventListener("click", () => (window.location.href = "settings.html"));
@@ -111,6 +112,20 @@
       renderPantrySavedList();
       alert("Đã lưu tủ lạnh.");
     });
+
+    const btnToggleEdit = $("btnToggleEdit");
+    const btnRemoveSelected = $("btnRemoveSelected");
+    const listEl = $("pantrySavedList");
+    if (btnToggleEdit && btnRemoveSelected && listEl) {
+      btnToggleEdit.addEventListener("click", () => {
+        editMode = !editMode;
+        listEl.classList.toggle("is-editing", editMode);
+        btnRemoveSelected.classList.toggle("hidden", !editMode);
+        btnToggleEdit.innerHTML = editMode
+          ? '<span class="icon">✅</span>Xong'
+          : '<span class="icon">✏️</span>Chỉnh sửa';
+      });
+    }
 
     $("btnRemoveSelected")?.addEventListener("click", () => {
       const host = $("pantrySavedList");

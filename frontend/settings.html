@@ -73,43 +73,64 @@
         </header>
 
         <main class="grid">
-          <section class="card hero-card">
-            <h2>Giao diện &amp; Ngôn ngữ</h2>
+          <section class="card profile-card">
+            <div class="profile-head">
+              <div>
+                <h2>Tài khoản</h2>
+                <p class="page-sub">Quản lý thông tin cơ bản và đăng xuất.</p>
+              </div>
+            </div>
+            <div class="profile-body">
+              <div class="avatar-block">
+                <div id="profileAvatar" class="avatar-preview"></div>
+                <label class="label">Ảnh đại diện (URL)</label>
+                <input id="avatarUrl" class="input input-sm" placeholder="Dán link ảnh đại diện..." />
+                <div class="hint">Ảnh dùng trên trình duyệt hiện tại.</div>
+              </div>
+              <div class="profile-fields">
+                <label class="label">Tên hiển thị</label>
+                <input id="profileName" class="input input-sm" />
+                <label class="label">Email</label>
+                <input id="profileEmail" class="input input-sm" readonly />
+                <div class="profile-actions">
+                  <button id="btnSaveProfile" class="btn btn-secondary" type="button">
+                    <span class="icon">💾</span>Lưu thông tin
+                  </button>
+                  <button id="btnFakeLogout" class="btn btn-ghost" type="button">
+                    <span class="icon">🚪</span>Đăng xuất
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>Tùy chọn</h2>
             <div class="form-grid">
               <div>
                 <label class="label">Số món gợi ý mỗi lần</label>
                 <input id="recipeCount" type="number" min="1" value="3" class="input input-sm" />
               </div>
 
+              <div>
+                <label class="label">Màu chủ đạo</label>
+                <div class="theme-pills">
+                  <button class="theme-pill" data-theme="sunset">Cam ấm</button>
+                  <button class="theme-pill" data-theme="mint">Xanh mint</button>
+                  <button class="theme-pill" data-theme="ocean">Xanh biển</button>
+                  <button class="theme-pill" data-theme="berry">Tím dịu</button>
+                </div>
+              </div>
+
               <div class="full">
                 <label class="label">Ghi chú cho người chấm đồ án</label>
-                  <textarea
-                    id="reviewNote"
-                    class="textarea"
-                    rows="4"
-                    placeholder="Ví dụ: Ghi chú về AI/Backend"
-                  ></textarea>
+                <textarea
+                  id="reviewNote"
+                  class="textarea"
+                  rows="4"
+                  placeholder="Ví dụ: Ghi chú về AI/Backend"
+                ></textarea>
               </div>
-            </div>
-          </section>
-
-          <section class="card">
-            <h2>Tài khoản</h2>
-            <div class="form-grid">
-              <div>
-                <label class="label">Tên hiển thị</label>
-                <input id="profileName" class="input input-sm" readonly />
-              </div>
-              <div>
-                <label class="label">Email</label>
-                <input id="profileEmail" class="input input-sm" readonly />
-              </div>
-            </div>
-            <div class="hint">
-              Bạn có thể đăng xuất và đăng nhập lại bằng tài khoản khác.
-            </div>
-            <div class="actions" style="margin-top: 10px">
-              <button id="btnFakeLogout" class="btn btn-secondary" type="button"><span class="icon">🚪</span>Đăng xuất</button>
             </div>
           </section>
         </main>

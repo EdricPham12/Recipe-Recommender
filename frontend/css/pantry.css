@@ -1372,4 +1372,9 @@ code {
 
 .pantry-item input[type="checkbox"] {
   margin-right: 6px;
+  display: none;
+}
+
+.pantry-list.is-editing .pantry-item input[type="checkbox"] {
+  display: inline-block;
 }

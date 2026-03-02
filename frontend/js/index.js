@@ -246,37 +246,6 @@
     });
   }
 
-  function updateShoppingList() {
-    const pantryListEl = $("pantryList");
-    const missingEl = $("missingList");
-    const haveEl = $("haveList");
-
-    const pantryItems = normalizeIngredients(loadPantryText());
-    renderList(pantryListEl, pantryItems, "Chưa có dữ liệu tủ lạnh.");
-
-    const ingText = $("ingredientsText")?.value || "";
-    const ingredients = normalizeIngredients(ingText);
-    if (!ingredients.length) {
-      renderList(missingEl, [], "Nhập nguyên liệu để kiểm tra.");
-      renderList(haveEl, [], "Chưa có dữ liệu.");
-      return;
-    }
-
-    const pantryKeys = pantryItems.map((x) => toKey(x));
-    const missing = [];
-    const have = [];
-
-    ingredients.forEach((item) => {
-      const key = toKey(item);
-      const matched = pantryKeys.some((p) => p === key || p.includes(key) || key.includes(p));
-      if (matched) have.push(item);
-      else missing.push(item);
-    });
-
-    renderList(missingEl, missing, "Bạn đã có đủ nguyên liệu.");
-    renderList(haveEl, have, "Chưa xác định.");
-  }
-
   function renderRecipePantryStatus(result) {
     const haveEl = $("recipeHaveList");
     const missingEl = $("recipeMissingList");
@@ -633,7 +602,6 @@
     $("resultEmpty")?.classList.remove("hidden");
     $("suggestionsShell")?.classList.add("hidden");
     resetTimer();
-    updateShoppingList();
     renderRecipePantryStatus(null);
   }
 
@@ -725,20 +693,6 @@
     $("btnTimerPause")?.addEventListener("click", pauseTimer);
     $("btnTimerReset")?.addEventListener("click", resetTimer);
 
-    $("btnSaveToPantry")?.addEventListener("click", () => {
-      const ingText = $("ingredientsText")?.value || "";
-      const ingredients = normalizeIngredients(ingText);
-      if (!ingredients.length) {
-        alert("Bạn hãy nhập nguyên liệu trước.");
-        return;
-      }
-      const pantryItems = normalizeIngredients(loadPantryText());
-      const merged = normalizeIngredients([...pantryItems, ...ingredients].join(", "));
-      savePantryText(merged.join(", "));
-      updateShoppingList();
-      alert("Đã lưu vào tủ lạnh.");
-    });
-
     const recipeCountMain = $("recipeCountMain");
     if (recipeCountMain) {
       recipeCountMain.value = String(loadRecipeCount());
@@ -746,9 +700,7 @@
     }
 
     applyRestore();
-    updateShoppingList();
-    $("ingredientsText")?.addEventListener("input", updateShoppingList);
-    window.addEventListener("focus", updateShoppingList);
+    window.addEventListener("focus", () => renderRecipePantryStatus(lastResult));
   }
 
   document.addEventListener("DOMContentLoaded", setupIndexPage);

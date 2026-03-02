@@ -5,6 +5,8 @@
     recipeCount: "cookai.recipeCount",
     user: "cookai.user",
     reviewNote: "cookai.reviewNote",
+    avatar: "cookai.avatar",
+    theme: "cookai.themeColor",
   };
 
   function $(id) {
@@ -41,8 +43,57 @@
     }
   }
 
+  function saveUser(user) {
+    localStorage.setItem(LS.user, JSON.stringify(user));
+  }
+
   function clearUser() {
     localStorage.removeItem(LS.user);
+  }
+
+  function loadAvatar() {
+    return localStorage.getItem(LS.avatar) || "";
+  }
+
+  function saveAvatar(url) {
+    localStorage.setItem(LS.avatar, url || "");
+  }
+
+  function getInitials(name) {
+    const parts = String(name || "")
+      .trim()
+      .split(/\s+/g)
+      .filter(Boolean);
+    if (!parts.length) return "SC";
+    const first = parts[0][0] || "";
+    const last = parts.length > 1 ? parts[parts.length - 1][0] || "" : "";
+    return (first + last).toUpperCase();
+  }
+
+  function applyAvatar(url, name) {
+    const avatar = $("profileAvatar");
+    const navAvatar = document.querySelector(".sidebar-user-avatar");
+    const initials = getInitials(name);
+    if (avatar) {
+      if (url) {
+        avatar.style.backgroundImage = `url(\"${url}\")`;
+        avatar.style.backgroundSize = "cover";
+        avatar.style.backgroundPosition = "center";
+        avatar.textContent = "";
+      } else {
+        avatar.style.backgroundImage = "";
+        avatar.textContent = initials;
+      }
+    }
+    if (navAvatar) {
+      if (url) {
+        navAvatar.style.backgroundImage = `url(\"${url}\")`;
+        navAvatar.style.backgroundSize = "cover";
+        navAvatar.style.backgroundPosition = "center";
+      } else {
+        navAvatar.style.backgroundImage = "";
+      }
+    }
   }
 
   function updateUserUI() {
@@ -55,6 +106,10 @@
     const profileEmail = $("profileEmail");
     if (profileEmail) profileEmail.value = user?.email || "";
 
+    const avatarUrl = $("avatarUrl");
+    if (avatarUrl) avatarUrl.value = loadAvatar();
+    applyAvatar(loadAvatar(), user?.name || "");
+
     const btnLogout = $("btnFakeLogout");
     if (btnLogout) btnLogout.textContent = user ? "Đăng xuất" : "Đăng nhập";
   }
@@ -63,6 +118,22 @@
     clearUser();
     updateUserUI();
     window.location.href = "login.html";
+  }
+
+  function applyTheme(themeId) {
+    const themes = {
+      sunset: { primary: "#e4572e", accent: "#2a9d8f" },
+      mint: { primary: "#2a9d8f", accent: "#76c7b7" },
+      ocean: { primary: "#2b59c3", accent: "#00a896" },
+      berry: { primary: "#b8336a", accent: "#6a4c93" },
+    };
+    const theme = themes[themeId] || themes.sunset;
+    document.documentElement.style.setProperty("--primary", theme.primary);
+    document.documentElement.style.setProperty("--accent", theme.accent);
+    setSetting(LS.theme, themeId || "sunset");
+    document.querySelectorAll(".theme-pill").forEach((btn) => {
+      btn.classList.toggle("active", btn.getAttribute("data-theme") === themeId);
+    });
   }
 
   function setupSettingsPage() {
@@ -85,11 +156,34 @@
         else performLogout();
       });
 
+    const btnSaveProfile = $("btnSaveProfile");
+    if (btnSaveProfile) {
+      btnSaveProfile.addEventListener("click", () => {
+        const user = loadUser();
+        if (!user) {
+          alert("Bạn cần đăng nhập để lưu.");
+          return;
+        }
+        const name = $("profileName")?.value?.trim() || user.name || "";
+        const avatarUrl = $("avatarUrl")?.value?.trim() || "";
+        saveUser({ ...user, name });
+        saveAvatar(avatarUrl);
+        updateUserUI();
+        alert("Đã lưu thông tin.");
+      });
+    }
+
     const recipeCount = $("recipeCount");
     if (recipeCount) {
       recipeCount.value = String(loadRecipeCount());
       recipeCount.addEventListener("change", () => saveRecipeCount(recipeCount.value));
     }
+
+    const savedTheme = getSetting(LS.theme, "sunset");
+    applyTheme(savedTheme);
+    document.querySelectorAll(".theme-pill").forEach((btn) => {
+      btn.addEventListener("click", () => applyTheme(btn.getAttribute("data-theme")));
+    });
 
     const reviewNote = $("reviewNote");
     if (reviewNote) {
