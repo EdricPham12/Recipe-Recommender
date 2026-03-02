@@ -1363,3 +1363,13 @@ code {
   font-size: 14px;
   opacity: 0.9;
 }
+
+.pantry-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pantry-item input[type="checkbox"] {
+  margin-right: 6px;
+}
