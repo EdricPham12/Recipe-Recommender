@@ -7,12 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesqu…00;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./css/reviews.css" />
   </head>
-  <body>
+  <body data-page="reviews">
     <div class="shell">
       <aside class="sidebar">
         <div class="sidebar-brand">
@@ -68,23 +68,50 @@
           <div class="topbar-left">
             <p class="eyebrow">Đánh giá món</p>
             <h1 class="page-title">Chia sẻ cảm nhận để cải thiện gợi ý.</h1>
-            <p class="page-sub">
-              Chọn món đã nấu từ lịch sử hoặc từ danh sách gợi ý gần đây.
-            </p>
+            <p class="page-sub">Chọn món đã nấu từ lịch sử hoặc tự nhập tên món.</p>
           </div>
         </header>
 
         <main class="grid">
           <section class="card">
+            <div class="summary-grid">
+              <div>
+<div class="summary-score" id="avgRating">0.0</div>
+                <div class="summary-meta" id="reviewCount">0 đánh giá</div>
+                <div class="summary-meta" id="reviewHint">Chưa có đánh giá nào.</div>
+              </div>
+              <div class="rating-bars" id="ratingBars"></div>
+            </div>
+          </section>
+
+          <section class="card">
             <h2>Gửi đánh giá</h2>
             <div class="form-grid">
               <div class="full">
-  <label class="label">Mon da nau</label>
-  <select id="reviewDishSelect" class="select select-sm"></select>
-  <div id="customDishWrap" class="hidden" style="margin-top: 8px">
-    <input id="ratingDish" class="input" placeholder="Hoac nhap ten mon (neu can)" />
-  </div>
-</div>
+                <label class="label">Món đã nấu</label>
+                <select id="reviewDishSelect" class="select"></select>
+                <div id="customDishWrap" class="hidden" style="margin-top: 8px">
+                  <input id="ratingDish" class="input" placeholder="Hoặc nhập tên món (nếu cần)" />
+                </div>
+              </div>
+              <div>
+                <label class="label">Giá thành</label>
+                <select id="reviewBudget" class="select">
+                  <option value="">Chọn...</option>
+                  <option value="Tiết kiệm">Tiết kiệm</option>
+                  <option value="Vừa phải">Vừa phải</option>
+                  <option value="Cao">Cao</option>
+                </select>
+              </div>
+              <div>
+                <label class="label">Độ khó</label>
+                <select id="reviewDifficulty" class="select">
+                  <option value="">Chọn...</option>
+                  <option value="Dễ">Dễ</option>
+                  <option value="Trung bình">Trung bình</option>
+                  <option value="Khó">Khó</option>
+                </select>
+              </div>
               <div class="full">
                 <label class="label">Đánh giá</label>
                 <div id="ratingStars" class="rating-stars">
@@ -96,26 +123,52 @@
                 </div>
               </div>
               <div class="full">
+                <label class="label">Cảm nhận nhanh</label>
+                <div class="review-tags" id="reviewTags">
+                  <button class="tag-pill" type="button" data-tag="Đậm vị">Đậm vị</button>
+                  <button class="tag-pill" type="button" data-tag="Thanh nhẹ">Thanh nhẹ</button>
+                  <button class="tag-pill" type="button" data-tag="Cay">Cay</button>
+                  <button class="tag-pill" type="button" data-tag="Dễ nấu">Dễ nấu</button>
+                  <button class="tag-pill" type="button" data-tag="Hợp gia đình">Hợp gia đình</button>
+                </div>
+              </div>
+<div class="full">
                 <label class="label">Nhận xét</label>
-                <textarea id="ratingText" class="textarea" rows="4" placeholder="Món hợp vị, dễ nấu..."></textarea>
+                <textarea id="ratingText" class="textarea" rows="4" placeholder="Món hợp vị, dễ nấu, phù hợp bữa tối..."></textarea>
+              </div>
+              <div class="full">
+                <label class="check"><input id="cookAgain" type="checkbox" />Sẽ nấu lại món này</label>
               </div>
               <div class="full row-actions">
                 <button id="btnSendFeedback" class="btn btn-secondary" type="button">Gửi đánh giá</button>
+                <button id="btnResetFeedback" class="btn btn-ghost" type="button">Đặt lại</button>
                 <span id="ratingStatus" class="status"></span>
               </div>
             </div>
           </section>
 
           <section class="card">
-            <h2>Đánh giá gần đây</h2>
-            <div id="reviewsList" class="reviews-list"></div>
+            <div class="review-filters">
+              <input id="reviewSearch" class="input" placeholder="Tìm theo tên món..." />
+              <select id="reviewSort" class="select">
+                <option value="new">Mới nhất</option>
+                <option value="old">Cũ nhất</option>
+                <option value="high">Điểm cao</option>
+                <option value="low">Điểm thấp</option>
+              </select>
+              <button class="btn btn-ghost" data-filter="all">Tất cả</button>
+              <button class="btn btn-ghost" data-filter="5">5 sao</button>
+              <button class="btn btn-ghost" data-filter="4">4 sao</button>
+              <button class="btn btn-ghost" data-filter="3">3 sao</button>
+              <button class="btn btn-ghost" data-filter="2">2 sao</button>
+              <button class="btn btn-ghost" data-filter="1">1 sao</button>
+            </div>
+            <div id="reviewsList" class="review-list"></div>
           </section>
         </main>
       </div>
     </div>
 
-    <script src="./history.js"></script>
-    <script src="./app.js"></script>
+    <script src="./js/reviews.js"></script>
   </body>
 </html>
-

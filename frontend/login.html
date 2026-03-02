@@ -10,36 +10,47 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./css/login.css" />
   </head>
   <body data-page="login">
     <div class="auth-shell">
-      <div class="card auth-card">
-        <div class="auth-brand">SmartCook</div>
-        <div class="auth-sub">Đăng nhập để lưu lịch sử và món yêu thích.</div>
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="auth-brand">SmartCook</div>
+          <p class="auth-sub">Chào mừng quay lại. Đăng nhập để lưu lịch sử và món yêu thích.</p>
+        </div>
+
         <form id="loginForm" class="form-grid" autocomplete="on">
           <div class="full">
-            <label class="label">Email</label>
-            <input id="loginEmail" type="email" class="input" placeholder="name@email.com" required />
+            <label class="label">Tên đăng nhập hoặc Email</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input id="loginId" type="text" class="input" placeholder="username hoặc name@email.com" required />
+            </div>
           </div>
           <div class="full">
             <label class="label">Mật khẩu</label>
-            <input id="loginPassword" type="password" class="input" placeholder="••••••••" required />
-          </div>
-          <div class="full row-actions">
-            <div class="actions">
-              <button class="btn btn-primary" type="submit">Đăng nhập</button>
-              <a class="btn btn-secondary" href="register.html">Đăng ký</a>
+            <div class="password-field">
+              <span class="input-icon">🔒</span>
+              <input id="loginPassword" type="password" class="input" placeholder="••••••••" required />
+              <button class="eye-btn" type="button" aria-label="Hiện mật khẩu" data-eye="loginPassword">👁</button>
             </div>
           </div>
+          <div class="auth-row">
+            <label class="check"><input id="rememberLogin" type="checkbox" />Lưu thông tin đăng nhập</label>
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-primary" type="submit">Đăng nhập</button>
+            <a class="btn btn-ghost" href="register.html">Tạo tài khoản</a>
+          </div>
+          <div class="auth-foot">
+            <a class="auth-link" href="forgot.html">Quên mật khẩu?</a>
+          </div>
+          <div id="authMessage" class="status"></div>
         </form>
       </div>
     </div>
 
-    <script src="./login.js"></script>
-    <script src="./app.js"></script>
+    <script src="./js/login.js"></script>
   </body>
 </html>
-
-
-

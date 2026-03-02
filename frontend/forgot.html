@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Quên mật khẩu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/forgot.css" />
+  </head>
+  <body data-page="forgot">
+    <div class="auth-shell">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="auth-brand">SmartCook</div>
+          <p class="auth-sub">Nhập email đã đăng ký để đặt lại mật khẩu.</p>
+        </div>
+
+        <form id="forgotForm" class="form-grid" autocomplete="on">
+          <div class="full">
+            <label class="label">Email</label>
+            <input id="forgotEmail" type="email" class="input" placeholder="name@email.com" required />
+          </div>
+          <div class="full">
+            <label class="label">Mật khẩu mới</label>
+            <input id="forgotPassword" type="password" class="input" placeholder="••••••••" required />
+          </div>
+          <div class="full">
+            <label class="label">Xác nhận mật khẩu mới</label>
+            <input id="forgotConfirm" type="password" class="input" placeholder="••••••••" required />
+          </div>
+          <div class="row-actions">
+            <button class="btn btn-primary" type="submit">Cập nhật mật khẩu</button>
+            <a class="btn btn-ghost" href="login.html">Quay lại đăng nhập</a>
+          </div>
+          <div id="forgotStatus" class="status"></div>
+        </form>
+      </div>
+    </div>
+
+    <script src="./js/forgot.js"></script>
+  </body>
+</html>

@@ -7,12 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesqu…00;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./css/history.css" />
   </head>
-  <body>
+  <body data-page="history">
     <div class="shell">
       <aside class="sidebar">
         <div class="sidebar-brand">
@@ -68,21 +68,45 @@
           <div class="topbar-left">
             <p class="eyebrow">Lịch sử gợi ý món</p>
             <h1 class="page-title">Xem lại những món AI đã gợi ý.</h1>
-            <p class="page-sub">Du lieu hien tai luu tren trinh duyet. Sau nay co the ket noi database.</p>
+            <p class="page-sub">Dữ liệu hiện tại lưu trên trình duyệt của bạn.</p>
           </div>
         </header>
 
         <main class="grid">
           <section class="card">
-            <h2>Lịch sử gần đây</h2>
+            <div class="card-head">
+              <div>
+                <h2>Lịch sử gần đây</h2>
+<p class="card-sub">Chọn “Mở lại” để quay về trang gợi ý món.</p>
+              </div>
+              <div class="history-toolbar">
+                <input id="historySearch" class="input input-sm" placeholder="Tìm món hoặc nguyên liệu..." />
+                <select id="historyFilter" class="select select-sm">
+                  <option value="all">Tất cả</option>
+                  <option value="7">7 ngày gần nhất</option>
+                  <option value="30">30 ngày gần nhất</option>
+                </select>
+                <select id="historySort" class="select select-sm">
+                  <option value="new">Mới nhất</option>
+                  <option value="old">Cũ nhất</option>
+                </select>
+                <div class="history-toolbar-right">
+                  <button id="btnEditHistory" class="btn btn-ghost" type="button">✏️ Chỉnh sửa</button>
+                  <div class="history-edit-tools">
+                    <label class="check"><input id="historySelectAll" type="checkbox" />Chọn tất cả</label>
+                    <button id="btnDeleteSelected" class="btn btn-ghost" type="button">🗑 Xóa đã chọn</button>
+                    <button id="btnClearHistory" class="btn btn-danger" type="button">🧹 Xóa tất cả</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="historyStats" class="history-stats"></div>
             <div id="history" class="history"></div>
           </section>
         </main>
       </div>
     </div>
 
-    <script src="./history.js"></script>
-    <script src="./app.js"></script>
+    <script src="./js/history.js"></script>
   </body>
 </html>
-
