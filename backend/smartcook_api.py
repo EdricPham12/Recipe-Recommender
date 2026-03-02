@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import os
+import re
 import tempfile
 import uuid
 from collections import defaultdict
@@ -11,12 +13,23 @@ from typing import Any
 import cv2
 import numpy as np
 import torch
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
+from sqlalchemy.orm import Session
 from transformers import CLIPModel, CLIPProcessor
 from ultralytics import YOLO
+
+from db_mysql import get_db
+import repo_mysql as repo
+
+try:
+    from openai import OpenAI
+    openai_client = OpenAI()
+except Exception as e:
+    openai_client = None
+    print("OpenAI client not available:", e)
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -90,6 +103,18 @@ PROMPT_TEMPLATES = [
     "a food item for cooking, specifically {alias}",
     "an ingredient for home cooking: {alias}",
 ]
+
+
+def _extract_json(text: str) -> dict[str, Any] | None:
+    if not text:
+        return None
+    match = re.search(r"\{.*\}", text, re.DOTALL)
+    if not match:
+        return None
+    try:
+        return json.loads(match.group(0))
+    except Exception:
+        return None
 
 
 class SegmentationService:
@@ -531,6 +556,156 @@ async def recognize_ingredients(
         },
         "detections": raw_detections,
     }
+
+
+@app.post("/api/identify-food")
+def api_identify_food(payload: dict[str, Any]):
+    if openai_client is None:
+        raise HTTPException(status_code=500, detail="OpenAI client not configured.")
+
+    img = payload.get("image")
+    if not img:
+        raise HTTPException(status_code=400, detail="no image provided")
+
+    image_url = img if str(img).startswith("data:") else f"data:image/jpeg;base64,{img}"
+    prompt = (
+        "Ban la dau bep. Hay nhan dien mon an/ nguyen lieu trong anh. "
+        "Uu tien nguyen lieu chinh (thit, rau, ca, trung, gia vi). "
+        "Bo qua do dung khong phai nguyen lieu (dia, muong, dao, bat, nen ban). "
+        "Tra ve JSON thuan: {\"dish\": string, \"ingredients\": [string], \"confidence\": number}."
+    )
+
+    try:
+        resp = openai_client.responses.create(
+            model="gpt-4.1-mini",
+            input=[{
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": prompt},
+                    {"type": "input_image", "image_url": image_url},
+                ],
+            }],
+        )
+        text = (resp.output_text or "").strip()
+        parsed = _extract_json(text) or {}
+        return {
+            "dish": parsed.get("dish") or "",
+            "ingredients": parsed.get("ingredients") or [],
+            "confidence": parsed.get("confidence") or 0,
+        }
+    except Exception as e:
+        print("OpenAI identify call failed", e)
+        raise HTTPException(status_code=500, detail="openai identify failed")
+
+
+@app.post("/api/suggest-recipes")
+def api_suggest_recipes(payload: dict[str, Any]):
+    if openai_client is None:
+        raise HTTPException(status_code=500, detail="OpenAI client not configured.")
+
+    raw_ingredients = payload.get("ingredients")
+    if isinstance(raw_ingredients, str):
+        ingredients = [s.strip() for s in raw_ingredients.split(",") if s.strip()]
+    elif isinstance(raw_ingredients, list):
+        ingredients = [str(s).strip() for s in raw_ingredients if str(s).strip()]
+    else:
+        ingredients = []
+
+    if not ingredients:
+        raise HTTPException(status_code=400, detail="no ingredients provided")
+
+    try:
+        count = int(payload.get("count") or payload.get("constraints", {}).get("recipe_count") or 0)
+    except Exception:
+        count = 0
+
+    if count <= 0:
+        n = len(ingredients)
+        if n < 3:
+            count = 1
+        elif n < 6:
+            count = 2
+        else:
+            count = 3
+    count = max(1, min(6, count))
+
+    prompt = (
+        f"Ban la dau bep. Hay goi y {count} mon an phu hop tu danh sach nguyen lieu. "
+        "Uu tien mon Viet, huong dan vua phai (khong qua dai), de lam. "
+        "Tra ve JSON thuan theo schema: {\"results\":[{\"title\":string,\"ingredients\":[string],\"steps\":[string],\"tips\":[string],\"time\":{\"prep_min\":number,\"cook_min\":number},\"servings\":number,\"difficulty\":\"easy|medium|hard\"}]}. "
+        "Khong them giai thich."
+    )
+
+    try:
+        resp = openai_client.responses.create(
+            model="gpt-4.1-mini",
+            input=[{
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": prompt + "\nNguyen lieu: " + ", ".join(ingredients)},
+                ],
+            }],
+        )
+        text = (resp.output_text or "").strip()
+        parsed = _extract_json(text) or {}
+        results = parsed.get("results") or []
+
+        norm = []
+        for r in results:
+            if not isinstance(r, dict):
+                continue
+            norm.append({
+                "title": r.get("title") or "Mon goi y",
+                "ingredients": r.get("ingredients") or [],
+                "steps": r.get("steps") or [],
+                "tips": r.get("tips") or [],
+                "time": r.get("time") or {},
+                "servings": r.get("servings") or 2,
+                "difficulty": r.get("difficulty") or "easy",
+            })
+        return {"results": norm}
+    except Exception as e:
+        print("OpenAI suggest call failed", e)
+        raise HTTPException(status_code=500, detail="openai suggest failed")
+
+
+@app.get("/favorites/{user_id}")
+def api_get_favorites(user_id: int, db: Session = Depends(get_db)):
+    return repo.get_favorites(db, user_id)
+
+
+@app.post("/favorites/{user_id}")
+def api_add_favorite(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    repo.add_favorite(db, user_id, payload["recipe_id"], payload["recipe_json"])
+    return {"ok": True}
+
+
+@app.delete("/favorites/{user_id}/{recipe_id}")
+def api_delete_favorite(user_id: int, recipe_id: str, db: Session = Depends(get_db)):
+    repo.delete_favorite(db, user_id, recipe_id)
+    return {"ok": True}
+
+
+@app.get("/history/{user_id}")
+def api_get_history(user_id: int, db: Session = Depends(get_db)):
+    return repo.get_history(db, user_id)
+
+
+@app.post("/history/{user_id}")
+def api_add_history(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    repo.add_history(db, user_id, payload["recipe_id"], payload["recipe_json"])
+    return {"ok": True}
+
+
+@app.get("/pantry/{user_id}")
+def api_get_pantry(user_id: int, db: Session = Depends(get_db)):
+    return repo.get_pantry(db, user_id) or {"text": "", "updated_at": None}
+
+
+@app.put("/pantry/{user_id}")
+def api_put_pantry(user_id: int, payload: dict, db: Session = Depends(get_db)):
+    repo.upsert_pantry(db, user_id, payload.get("text", ""))
+    return {"ok": True}
 
 
 if __name__ == "__main__":
