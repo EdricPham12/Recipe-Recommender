@@ -1405,6 +1405,13 @@ code {
   box-shadow: 0 10px 20px rgba(36, 27, 21, 0.12);
 }
 
+.avatar-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .profile-fields {
   display: grid;
   grid-template-columns: 1fr;

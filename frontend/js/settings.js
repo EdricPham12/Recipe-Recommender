@@ -2,37 +2,23 @@
   "use strict";
 
   const LS = {
-    recipeCount: "cookai.recipeCount",
     user: "cookai.user",
-    reviewNote: "cookai.reviewNote",
-    avatar: "cookai.avatar",
-    theme: "cookai.themeColor",
+    users: "cookai.users",
   };
 
   function $(id) {
     return document.getElementById(id);
   }
 
-  function loadRecipeCount() {
-    const raw = localStorage.getItem(LS.recipeCount);
-    const val = Number(raw);
-    if (!Number.isFinite(val) || val <= 0) return 3;
-    return Math.max(1, val);
+  function setStatus(el, text, type) {
+    if (!el) return;
+    el.classList.remove("good", "bad", "warn");
+    if (type) el.classList.add(type);
+    el.textContent = text || "";
   }
 
-  function saveRecipeCount(value) {
-    const val = Number(value);
-    if (!Number.isFinite(val)) return;
-    localStorage.setItem(LS.recipeCount, String(Math.max(1, val)));
-  }
-
-  function getSetting(key, fallback = "") {
-    const raw = localStorage.getItem(key);
-    return raw == null ? fallback : raw;
-  }
-
-  function setSetting(key, value) {
-    localStorage.setItem(key, String(value ?? ""));
+  function isValidEmail(email) {
+    return /.+@.+\..+/.test(email);
   }
 
   function loadUser() {
@@ -51,12 +37,16 @@
     localStorage.removeItem(LS.user);
   }
 
-  function loadAvatar() {
-    return localStorage.getItem(LS.avatar) || "";
+  function loadUsers() {
+    try {
+      return JSON.parse(localStorage.getItem(LS.users) || "[]");
+    } catch {
+      return [];
+    }
   }
 
-  function saveAvatar(url) {
-    localStorage.setItem(LS.avatar, url || "");
+  function saveUsers(items) {
+    localStorage.setItem(LS.users, JSON.stringify(items));
   }
 
   function getInitials(name) {
@@ -70,13 +60,14 @@
     return (first + last).toUpperCase();
   }
 
-  function applyAvatar(url, name) {
+  function applyAvatar(user) {
     const avatar = $("profileAvatar");
     const navAvatar = document.querySelector(".sidebar-user-avatar");
-    const initials = getInitials(name);
+    const initials = getInitials(user?.name || "");
+
     if (avatar) {
-      if (url) {
-        avatar.style.backgroundImage = `url(\"${url}\")`;
+      if (user?.avatar) {
+        avatar.style.backgroundImage = `url('${user.avatar}')`;
         avatar.style.backgroundSize = "cover";
         avatar.style.backgroundPosition = "center";
         avatar.textContent = "";
@@ -85,9 +76,10 @@
         avatar.textContent = initials;
       }
     }
+
     if (navAvatar) {
-      if (url) {
-        navAvatar.style.backgroundImage = `url(\"${url}\")`;
+      if (user?.avatar) {
+        navAvatar.style.backgroundImage = `url('${user.avatar}')`;
         navAvatar.style.backgroundSize = "cover";
         navAvatar.style.backgroundPosition = "center";
       } else {
@@ -103,12 +95,14 @@
 
     const profileName = $("profileName");
     if (profileName) profileName.value = user?.name || "";
+    const profileUsername = $("profileUsername");
+    if (profileUsername) profileUsername.value = user?.username || "";
     const profileEmail = $("profileEmail");
     if (profileEmail) profileEmail.value = user?.email || "";
+    const profilePhone = $("profilePhone");
+    if (profilePhone) profilePhone.value = user?.phone || "";
 
-    const avatarUrl = $("avatarUrl");
-    if (avatarUrl) avatarUrl.value = loadAvatar();
-    applyAvatar(loadAvatar(), user?.name || "");
+    applyAvatar(user);
 
     const btnLogout = $("btnFakeLogout");
     if (btnLogout) btnLogout.textContent = user ? "Đăng xuất" : "Đăng nhập";
@@ -120,19 +114,141 @@
     window.location.href = "login.html";
   }
 
-  function applyTheme(themeId) {
-    const themes = {
-      sunset: { primary: "#e4572e", accent: "#2a9d8f" },
-      mint: { primary: "#2a9d8f", accent: "#76c7b7" },
-      ocean: { primary: "#2b59c3", accent: "#00a896" },
-      berry: { primary: "#b8336a", accent: "#6a4c93" },
-    };
-    const theme = themes[themeId] || themes.sunset;
-    document.documentElement.style.setProperty("--primary", theme.primary);
-    document.documentElement.style.setProperty("--accent", theme.accent);
-    setSetting(LS.theme, themeId || "sunset");
-    document.querySelectorAll(".theme-pill").forEach((btn) => {
-      btn.classList.toggle("active", btn.getAttribute("data-theme") === themeId);
+  function updateUserInList(updated) {
+    const users = loadUsers();
+    const idx = users.findIndex((u) => u.email === updated.email || u.username === updated.username);
+    if (idx !== -1) {
+      users[idx] = { ...users[idx], ...updated };
+      saveUsers(users);
+    }
+  }
+
+  function bindAvatarUpload() {
+    const input = $("avatarFile");
+    const removeBtn = $("btnRemoveAvatar");
+    if (input) {
+      input.addEventListener("change", () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const user = loadUser();
+          if (!user) return;
+          const avatar = String(reader.result || "");
+          const updated = { ...user, avatar };
+          saveUser(updated);
+          updateUserInList(updated);
+          updateUserUI();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (removeBtn) {
+      removeBtn.addEventListener("click", () => {
+        const user = loadUser();
+        if (!user) return;
+        const updated = { ...user, avatar: "" };
+        saveUser(updated);
+        updateUserInList(updated);
+        updateUserUI();
+      });
+    }
+  }
+
+  function bindProfileSave() {
+    const btnSave = $("btnSaveProfile");
+    const status = $("profileStatus");
+    if (!btnSave) return;
+
+    btnSave.addEventListener("click", () => {
+      const user = loadUser();
+      if (!user) {
+        setStatus(status, "Bạn cần đăng nhập để lưu.", "warn");
+        return;
+      }
+
+      const name = $("profileName")?.value?.trim() || "";
+      const username = $("profileUsername")?.value?.trim() || "";
+      const email = $("profileEmail")?.value?.trim() || "";
+      const phone = $("profilePhone")?.value?.trim() || "";
+
+      if (!name || !username || !email) {
+        setStatus(status, "Vui lòng nhập đủ tên, username và email.", "warn");
+        return;
+      }
+      if (!/^[a-zA-Z0-9_.-]{3,20}$/.test(username)) {
+        setStatus(status, "Tên đăng nhập chỉ gồm chữ/số và 3-20 ký tự.", "bad");
+        return;
+      }
+      if (!isValidEmail(email)) {
+        setStatus(status, "Email không đúng định dạng.", "bad");
+        return;
+      }
+
+      const users = loadUsers();
+      const conflict = users.some((u) =>
+        (u.email === email || u.username === username) && u.email !== user.email
+      );
+      if (conflict) {
+        setStatus(status, "Email hoặc username đã tồn tại.", "bad");
+        return;
+      }
+
+      const updated = { ...user, name, username, email, phone };
+      saveUser(updated);
+      updateUserInList(updated);
+      updateUserUI();
+      setStatus(status, "Đã lưu thông tin.", "good");
+    });
+  }
+
+  function bindPasswordChange() {
+    const btn = $("btnChangePassword");
+    const status = $("passwordStatus");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const user = loadUser();
+      if (!user) {
+        setStatus(status, "Bạn cần đăng nhập để đổi mật khẩu.", "warn");
+        return;
+      }
+
+      const current = $("currentPassword")?.value || "";
+      const next = $("newPassword")?.value || "";
+      const confirm = $("confirmPassword")?.value || "";
+
+      if (!current || !next || !confirm) {
+        setStatus(status, "Vui lòng nhập đầy đủ mật khẩu.", "warn");
+        return;
+      }
+      if (next.length < 6) {
+        setStatus(status, "Mật khẩu mới tối thiểu 6 ký tự.", "bad");
+        return;
+      }
+      if (next !== confirm) {
+        setStatus(status, "Mật khẩu xác nhận không khớp.", "bad");
+        return;
+      }
+
+      const users = loadUsers();
+      const idx = users.findIndex((u) => u.email === user.email || u.username === user.username);
+      if (idx === -1) {
+        setStatus(status, "Không tìm thấy tài khoản.", "bad");
+        return;
+      }
+      if (users[idx].password !== current) {
+        setStatus(status, "Mật khẩu hiện tại không đúng.", "bad");
+        return;
+      }
+
+      users[idx].password = next;
+      saveUsers(users);
+      setStatus(status, "Đã đổi mật khẩu.", "good");
+      $("currentPassword").value = "";
+      $("newPassword").value = "";
+      $("confirmPassword").value = "";
     });
   }
 
@@ -156,40 +272,9 @@
         else performLogout();
       });
 
-    const btnSaveProfile = $("btnSaveProfile");
-    if (btnSaveProfile) {
-      btnSaveProfile.addEventListener("click", () => {
-        const user = loadUser();
-        if (!user) {
-          alert("Bạn cần đăng nhập để lưu.");
-          return;
-        }
-        const name = $("profileName")?.value?.trim() || user.name || "";
-        const avatarUrl = $("avatarUrl")?.value?.trim() || "";
-        saveUser({ ...user, name });
-        saveAvatar(avatarUrl);
-        updateUserUI();
-        alert("Đã lưu thông tin.");
-      });
-    }
-
-    const recipeCount = $("recipeCount");
-    if (recipeCount) {
-      recipeCount.value = String(loadRecipeCount());
-      recipeCount.addEventListener("change", () => saveRecipeCount(recipeCount.value));
-    }
-
-    const savedTheme = getSetting(LS.theme, "sunset");
-    applyTheme(savedTheme);
-    document.querySelectorAll(".theme-pill").forEach((btn) => {
-      btn.addEventListener("click", () => applyTheme(btn.getAttribute("data-theme")));
-    });
-
-    const reviewNote = $("reviewNote");
-    if (reviewNote) {
-      reviewNote.value = getSetting(LS.reviewNote, "");
-      reviewNote.addEventListener("input", () => setSetting(LS.reviewNote, reviewNote.value));
-    }
+    bindAvatarUpload();
+    bindProfileSave();
+    bindPasswordChange();
   }
 
   document.addEventListener("DOMContentLoaded", setupSettingsPage);

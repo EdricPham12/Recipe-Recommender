@@ -20,7 +20,7 @@
           <div class="sidebar-sub">AI Meal Planner</div>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-item" href="index.html">
+          <a class="nav-item" href="home.html">
             <span class="dot"></span>
             <span class="icon">🏠</span>
             Trang chủ
@@ -67,8 +67,8 @@
         <header class="topbar">
           <div class="topbar-left">
             <p class="eyebrow">Cài đặt SmartCook</p>
-            <h1 class="page-title">Tuỳ chỉnh trải nghiệm nấu ăn cùng AI.</h1>
-            <p class="page-sub">Các tuỳ chọn được lưu trên trình duyệt. Sau này có thể đồng bộ tài khoản.</p>
+            <h1 class="page-title">Quản lý tài khoản và bảo mật.</h1>
+            <p class="page-sub">Các thay đổi sẽ được lưu trên trình duyệt hiện tại.</p>
           </div>
         </header>
 
@@ -77,68 +77,65 @@
             <div class="profile-head">
               <div>
                 <h2>Tài khoản</h2>
-                <p class="page-sub">Quản lý thông tin cơ bản và đăng xuất.</p>
+                <p class="page-sub">Cập nhật thông tin cá nhân.</p>
               </div>
             </div>
             <div class="profile-body">
               <div class="avatar-block">
-                <div id="profileAvatar" class="avatar-preview"></div>
-                <label class="label">Ảnh đại diện (URL)</label>
-                <input id="avatarUrl" class="input input-sm" placeholder="Dán link ảnh đại diện..." />
-                <div class="hint">Ảnh dùng trên trình duyệt hiện tại.</div>
+                <div id="profileAvatar" class="avatar-preview">SC</div>
+                <label class="label">Ảnh đại diện</label>
+                <input id="avatarFile" type="file" class="input input-sm" accept="image/*" />
+                <div class="avatar-actions">
+                  <button id="btnRemoveAvatar" class="btn btn-ghost" type="button">Xóa ảnh</button>
+                </div>
+                <div class="hint">Ảnh lưu tại trình duyệt hiện tại.</div>
               </div>
               <div class="profile-fields">
-                <label class="label">Tên hiển thị</label>
+                <label class="label">Họ và tên</label>
                 <input id="profileName" class="input input-sm" />
+                <label class="label">Tên đăng nhập</label>
+                <input id="profileUsername" class="input input-sm" />
                 <label class="label">Email</label>
-                <input id="profileEmail" class="input input-sm" readonly />
+                <input id="profileEmail" class="input input-sm" />
+                <label class="label">Số điện thoại</label>
+                <input id="profilePhone" class="input input-sm" placeholder="09xx xxx xxx" />
                 <div class="profile-actions">
                   <button id="btnSaveProfile" class="btn btn-secondary" type="button">
-                    <span class="icon">💾</span>Lưu thông tin
+                    <span class="icon">💾</span>Lưu thay đổi
                   </button>
                   <button id="btnFakeLogout" class="btn btn-ghost" type="button">
                     <span class="icon">🚪</span>Đăng xuất
                   </button>
                 </div>
+                <div id="profileStatus" class="status"></div>
               </div>
             </div>
           </section>
 
           <section class="card">
-            <h2>Tùy chọn</h2>
+            <h2>Bảo mật</h2>
             <div class="form-grid">
               <div>
-                <label class="label">Số món gợi ý mỗi lần</label>
-                <input id="recipeCount" type="number" min="1" value="3" class="input input-sm" />
+                <label class="label">Mật khẩu hiện tại</label>
+                <input id="currentPassword" type="password" class="input input-sm" placeholder="••••••••" />
               </div>
-
               <div>
-                <label class="label">Màu chủ đạo</label>
-                <div class="theme-pills">
-                  <button class="theme-pill" data-theme="sunset">Cam ấm</button>
-                  <button class="theme-pill" data-theme="mint">Xanh mint</button>
-                  <button class="theme-pill" data-theme="ocean">Xanh biển</button>
-                  <button class="theme-pill" data-theme="berry">Tím dịu</button>
-                </div>
+                <label class="label">Mật khẩu mới</label>
+                <input id="newPassword" type="password" class="input input-sm" placeholder="••••••••" />
               </div>
-
-              <div class="full">
-                <label class="label">Ghi chú cho người chấm đồ án</label>
-                <textarea
-                  id="reviewNote"
-                  class="textarea"
-                  rows="4"
-                  placeholder="Ví dụ: Ghi chú về AI/Backend"
-                ></textarea>
+              <div>
+                <label class="label">Xác nhận mật khẩu mới</label>
+                <input id="confirmPassword" type="password" class="input input-sm" placeholder="••••••••" />
+              </div>
+              <div class="full row-actions">
+                <button id="btnChangePassword" class="btn btn-secondary" type="button">Đổi mật khẩu</button>
+                <span id="passwordStatus" class="status"></span>
               </div>
             </div>
           </section>
         </main>
       </div>
-    </div>\n<script src="./js/settings.js"></script>
+    </div>
+    <script src="./js/settings.js"></script>
   </body>
 </html>
-
-
-
-
