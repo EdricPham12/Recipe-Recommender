@@ -1,8 +1,13 @@
 ﻿(function(){
+  const LS = {
+    pantry: 'cookai.pantry',
+  };
   const btnOpenCam = document.getElementById('btnOpenCam');
   const btnCapture = document.getElementById('btnCapture');
   const btnIdentify = document.getElementById('btnIdentify');
   const btnIdentifyServer = document.getElementById('btnIdentifyServer');
+  const btnSavePantry = document.getElementById('btnSavePantry');
+  const btnUsePantry = document.getElementById('btnUsePantry');
   const video = document.getElementById('video');
   const canvas = document.getElementById('captureCanvas');
   const previewWrap = document.getElementById('previewWrap');
@@ -28,6 +33,31 @@
     const saved = (localStorage.getItem('smartcook_api_base') || '').trim();
     if(saved) return saved.replace(/\/$/, '');
     return 'http://127.0.0.1:9001';
+  }
+  function normalizeIngredients(text){
+    const raw = String(text || '')
+      .replace(/\r/g, '')
+      .split(/[\n,]+/g)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const seen = new Set();
+    const out = [];
+    for(const item of raw){
+      const key = item.toLowerCase();
+      if(seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+    return out;
+  }
+
+  function loadPantryText(){
+    return localStorage.getItem(LS.pantry) || '';
+  }
+
+  function savePantryText(text){
+    localStorage.setItem(LS.pantry, text || '');
   }
 
   function mapVisionResponse(json){
@@ -543,13 +573,31 @@
       showSmall('Server không trả về kết quả phù hợp');
     }
   });
+  btnUsePantry?.addEventListener('click', ()=>{
+    const ingredientLines = normalizeIngredients(ingredientsText?.value || '');
+    const pantryLines = normalizeIngredients(pantryText?.value || '');
+    const merged = normalizeIngredients([...ingredientLines, ...pantryLines].join(', '));
+    if(!merged.length){
+      alert('Chưa có dữ liệu để thêm vào nguyên liệu.');
+      return;
+    }
+    if(ingredientsText) ingredientsText.value = merged.join('\n');
+  });
+
+  btnSavePantry?.addEventListener('click', ()=>{
+    const ingredientLines = normalizeIngredients(ingredientsText?.value || '');
+    const pantryLines = normalizeIngredients(pantryText?.value || '');
+    const nextFromScan = normalizeIngredients([...ingredientLines, ...pantryLines].join(', '));
+
+    if(!nextFromScan.length){
+      alert('Chưa có nguyên liệu hoặc gia vị để lưu.');
+      return;
+    }
+
+    const stored = normalizeIngredients(loadPantryText());
+    const merged = normalizeIngredients([...stored, ...nextFromScan].join(', '));
+    savePantryText(merged.join(', '));
+    alert('Đã lưu vào tủ lạnh.');
+  });
 })();
-
-
-
-
-
-
-
-
 
