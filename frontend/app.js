@@ -892,6 +892,12 @@ function saveFavorite() {
     return;
   }
   const items = loadFavorites();
+  const newTitleKey = toKey(lastResult.title || "Mon goi y");
+  const exists = items.some((it) => toKey(it?.title || "Mon goi y") === newTitleKey);
+  if (exists) {
+    alert("Mon nay da co trong yeu thich.");
+    return;
+  }
   items.unshift({
     createdAt: Date.now(),
     title: lastResult.title || "Mon goi y",
@@ -1242,7 +1248,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateUserUI();
   if ($("favorites")) renderFavorites();
 });
-
 
 
 
