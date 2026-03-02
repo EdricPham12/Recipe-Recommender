@@ -98,13 +98,16 @@
                 <div class="row-actions">
                   <button id="btnSavePantry" class="btn btn-secondary" type="button"><span class="icon">💾</span>Thêm vào tủ lạnh</button>
                 </div>
-                <div class="hint" style="margin-top: 8px">Danh sách tủ lạnh đã lưu:</div>
-                <ul id="pantrySavedList" class="list"></ul>
                 <div class="row-actions" style="margin-top: 8px">
-                  <button id="btnRemoveSelected" class="btn btn-ghost" type="button">
+                  <button id="btnToggleEdit" class="btn btn-ghost" type="button">
+                    <span class="icon">✏️</span>Chỉnh sửa
+                  </button>
+                  <button id="btnRemoveSelected" class="btn btn-ghost hidden" type="button">
                     <span class="icon">🗑</span>Xóa mục đã chọn
                   </button>
                 </div>
+                <div class="hint" style="margin-top: 8px">Danh sách tủ lạnh đã lưu:</div>
+                <ul id="pantrySavedList" class="list pantry-list"></ul>
               </div>
             </div>
           </section>
