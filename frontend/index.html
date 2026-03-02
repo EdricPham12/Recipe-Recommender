@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./css/index.css" />
   </head>
   <body data-page="index">
     <div class="shell">
@@ -52,7 +52,7 @@
           </button>
           <button class="sidebar-user-row" type="button" id="btnProfileNav">
             <span class="sidebar-user-avatar"></span>
-            <span class="sidebar-user-name">Tài khoản</span>
+            <span class="sidebar-user-name">Đăng nhập</span>
           </button>
         </div>
       </aside>
@@ -213,7 +213,7 @@
 
                 <div>
                   <label class="label">Số món gợi ý</label>
-                  <input id="recipeCountMain" type="number" min="1" max="6" value="3" class="input input-sm" />
+                  <input id="recipeCountMain" type="number" min="1" value="3" class="input input-sm" />
                 </div>
 
                 <div>
@@ -250,140 +250,86 @@
             </div>
           </section>
 
-          <section class="card quick-card">
-  <h2>Tác vụ nhanh</h2>
-  <div class="quick-actions">
-    <a class="quick-action" href="scan.html">
-      <h3>Quét ảnh</h3>
-      <p>OCR hình ảnh/nhận thực phẩm và tách nguyên liệu.</p>
-    </a>
-    <a class="quick-action" href="reviews.html">
-      <h3>Đánh giá món</h3>
-      <p>Gửi nhận xét để cải thiện gợi ý.</p>
-    </a>
-    <a class="quick-action" href="#pantry">
-      <h3>Tủ lạnh</h3>
-      <p>Lưu gia vị/món có sẵn để gợi ý chính xác.</p>
-    </a>
-    <a class="quick-action" href="favorites.html">
-      <h3>Món yêu thích</h3>
-      <p>Xem lại các món đã lưu.</p>
-    </a>
-    <a class="quick-action" href="history.html">
-      <h3>Lịch sử gợi ý</h3>
-      <p>Khôi phục các lần gợi ý trước.</p>
-    </a>
-  </div>
-</section>
-
-          <section class="card suggestions-card">
+          <section class="card suggestions-shell hidden" id="suggestionsShell">
             <div class="suggestions-head">
               <div>
-                <h2>Gợi ý nhiều món</h2>
-                <p class="page-sub">Chọn một món để xem hướng dẫn chi tiết.</p>
+                <h2>Danh sách món gợi ý</h2>
+                <p class="page-sub">Chọn 1 món để xem công thức chi tiết.</p>
               </div>
               <div class="suggestions-actions">
                 <button id="btnShuffle" class="btn btn-ghost" type="button">Làm mới gợi ý</button>
               </div>
             </div>
-            <div id="resultList" class="recipe-list">
-              <div class="empty">Chưa có gợi ý nào.</div>
-            </div>
-          </section>
 
-          <section class="card result-card">
-            <h2>Kết quả gợi ý</h2>
-            <div id="resultEmpty" class="empty">
-              Nhấn <b>Gợi ý món ngay</b> để nhận công thức chi tiết từ AI.
-            </div>
-
-            <article id="result" class="result hidden">
-              <div class="result-head">
-                <h3 id="resultTitle">Món ngon</h3>
-                <div class="meta" id="resultMeta"></div>
-              </div>
-
-              <div class="result-cols">
-                <div>
-                  <h4>Nguyên liệu</h4>
-                  <ul id="resultIngredients" class="list"></ul>
-                </div>
-                <div>
-                  <h4>Cách làm</h4>
-                  <ol id="resultSteps" class="steps"></ol>
-                </div>
-              </div>
-
-              <div class="cook-tools">
-                <div class="cook-tool">
-                  <h4>Checklist nấu ăn</h4>
-                  <div id="stepsProgress" class="status">0/0 bước</div>
-                </div>
-                <div class="cook-tool timer">
-                  <h4>Hẹn giờ</h4>
-                  <div class="timer-row">
-                    <input
-                      id="timerMinutes"
-                      class="input input-sm"
-                      type="number"
-                      min="1"
-                      step="1"
-                      value="15"
-                    />
-                    <span class="timer-label">phút</span>
-                    <div id="timerDisplay" class="timer-display">15:00</div>
-                  </div>
-                  <div class="timer-actions">
-                    <button id="btnTimerStart" class="btn btn-secondary" type="button">Bắt đầu</button>
-                    <button id="btnTimerPause" class="btn btn-ghost" type="button">Tạm dừng</button>
-                    <button id="btnTimerReset" class="btn btn-ghost" type="button">Reset</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="result-footer">
-  <div class="tips">
-    <h4>Mẹo</h4>
-    <ul id="resultTips" class="list"></ul>
-  </div>
-  <div class="actions">
-    <a class="btn btn-ghost" href="reviews.html">Danh gia</a>
-    <button id="btnSave" class="btn btn-secondary" type="button">Luu mon</button>
-  </div>
-</div>
-            </article>
-          </section>
-
-          <section class="card pantry-card" id="pantry">
-            <div class="two-col"> 
+            <div class="two-col">
               <div class="panel">
-                <div class="panel-title">Tủ lạnh &amp; gia vị sẵn có</div>
-                <textarea
-                  id="pantryText"
-                  class="textarea"
-                  rows="7"
-                  placeholder="Ví dụ: Nước mắm, Muối, Dầu ăn, Hành lá..."
-                ></textarea>
-                <div class="hint">Lưu danh sách này để lần sau AI tự hiểu bạn đã có sẵn.</div>
-                <div class="row-actions">
-                  <button id="btnSavePantry" class="btn btn-secondary" type="button">Lưu tủ lạnh</button>
-                  <button id="btnUsePantry" class="btn btn-ghost" type="button">Thêm vào nguyên liệu</button>
+                <div class="panel-title">Món gợi ý</div>
+                <div id="resultList" class="recipe-list">
+                  <div class="empty">Chưa có gợi ý nào.</div>
                 </div>
               </div>
 
-              <div class="panel">
-                <div class="panel-title">Cần mua thêm</div>
-                <div class="split-list">
-                  <div>
-                    <div class="label">Thiếu</div>
-                    <ul id="missingList" class="list"></ul>
-                  </div>
-                  <div>
-                    <div class="label">Đã có</div>
-                    <ul id="haveList" class="list"></ul>
-                  </div>
+              <div class="panel detail-panel">
+                <div class="panel-title">Chi tiết công thức</div>
+                <div id="resultEmpty" class="empty">
+                  Nhấn <b>Gợi ý món ngay</b>, sau đó chọn 1 món để xem chi tiết.
                 </div>
-                <div class="hint">Dựa trên nguyên liệu bạn nhập + tủ lạnh đã lưu.</div>
+
+                <article id="result" class="result hidden">
+                  <div class="result-head">
+                    <h3 id="resultTitle">Món ngon</h3>
+                    <div class="meta" id="resultMeta"></div>
+                  </div>
+
+                  <div class="result-cols">
+                    <div>
+                      <h4>Nguyên liệu</h4>
+                      <ul id="resultIngredients" class="list"></ul>
+                    </div>
+                    <div>
+                      <h4>Cách làm</h4>
+                      <ol id="resultSteps" class="steps"></ol>
+                    </div>
+                  </div>
+
+                  <div class="cook-tools">
+                    <div class="cook-tool">
+                      <h4>Checklist nấu ăn</h4>
+                      <div id="stepsProgress" class="status">0/0 bước</div>
+                    </div>
+                    <div class="cook-tool timer">
+                      <h4>Hẹn giờ</h4>
+                      <div class="timer-row">
+                        <input
+                          id="timerMinutes"
+                          class="input input-sm"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value="15"
+                        />
+                        <span class="timer-label">phút</span>
+                        <div id="timerDisplay" class="timer-display">15:00</div>
+                      </div>
+                      <div class="timer-actions">
+                        <button id="btnTimerStart" class="btn btn-secondary" type="button">Bắt đầu</button>
+                        <button id="btnTimerPause" class="btn btn-ghost" type="button">Tạm dừng</button>
+                        <button id="btnTimerReset" class="btn btn-ghost" type="button">Reset</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="result-footer">
+                    <div class="tips">
+                      <h4>Mẹo</h4>
+                      <ul id="resultTips" class="list"></ul>
+                    </div>
+                    <div class="actions">
+                      <a class="btn btn-ghost" href="reviews.html">Danh gia</a>
+                      <button id="btnSave" class="btn btn-secondary" type="button">Luu mon</button>
+                    </div>
+                  </div>
+                </article>
               </div>
             </div>
           </section>
@@ -391,13 +337,11 @@
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="./login.js"></script>
-    <script src="./history.js"></script>
-    <script src="./app.js"></script>
-    <script src="./index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>\n<script src="./js/index.js"></script>
   </body>
 </html>
+
+
 
 
 
