@@ -32,7 +32,7 @@
   function getApiBase(){
     const saved = (localStorage.getItem('smartcook_api_base') || '').trim();
     if(saved) return saved.replace(/\/$/, '');
-    return 'http://127.0.0.1:9001';
+    return 'http://127.0.0.1:8000';
   }
   function normalizeIngredients(text){
     const raw = String(text || '')
