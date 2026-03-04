@@ -80,6 +80,16 @@ function bindLoginForm() {
     } catch {
       setStatus(status, "Không kết nối được server. Kiểm tra backend đang chạy.", "bad");
     }
+<<<<<<< HEAD
+=======
+
+    saveUser({ name: match.name, email: match.email, username: match.username || "", avatar: match.avatar || "" });
+    if (remember) localStorage.setItem(LS.rememberLogin, JSON.stringify({ loginId }));
+    else localStorage.removeItem(LS.rememberLogin);
+
+    setStatus(status, "Đăng nhập thành công. Đang chuyển hướng...", "good");
+    setTimeout(() => (window.location.href = "home.html"), 500);
+>>>>>>> d03853e15b9f98de5506c12c041a18d296183e4b
   });
 }
 

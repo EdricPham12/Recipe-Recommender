@@ -10,13 +10,19 @@
     recipeCount: "cookai.recipeCount",
     user: "cookai.user",
     restore: "cookai.restore",
+<<<<<<< HEAD
     apiBase: "smartcook_api_base",
+=======
+    homeDraft: "cookai.homeDraft",
+    lastResults: "cookai.lastResults",
+>>>>>>> d03853e15b9f98de5506c12c041a18d296183e4b
   };
 
   let lastResult = null;
   let lastIngredientsInput = [];
   let lastConstraints = null;
   let activeResults = [];
+  let lastActiveIndex = 0;
   let timerInterval = null;
   let remainingSeconds = 0;
   let lastGenerationId = null;
@@ -32,6 +38,20 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  function normalizeTitle(raw) {
+    const cleaned = String(raw || "")
+      .replace(/[\u200b\u200c\u200d\ufeff]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!cleaned) return "";
+    const parts = cleaned.split(" ").filter(Boolean);
+    const short = parts.filter((p) => p.length <= 2);
+    if (parts.length >= 4 && short.length / parts.length >= 0.7) {
+      return parts.join("");
+    }
+    return cleaned;
   }
 
   function normalizeIngredients(text) {
@@ -109,6 +129,38 @@
     const val = Number(value);
     if (!Number.isFinite(val)) return;
     localStorage.setItem(LS.recipeCount, String(Math.max(1, val)));
+  }
+
+  function loadHomeDraft() {
+    try {
+      return JSON.parse(localStorage.getItem(LS.homeDraft) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function saveHomeDraft(data) {
+    localStorage.setItem(LS.homeDraft, JSON.stringify(data));
+  }
+
+  function clearHomeDraft() {
+    localStorage.removeItem(LS.homeDraft);
+  }
+
+  function loadLastResults() {
+    try {
+      return JSON.parse(localStorage.getItem(LS.lastResults) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function saveLastResults(payload) {
+    localStorage.setItem(LS.lastResults, JSON.stringify(payload));
+  }
+
+  function clearLastResults() {
+    localStorage.removeItem(LS.lastResults);
   }
 
   function loadPantryText() {
@@ -202,7 +254,7 @@
           .map((t) => `<span class="tag">${escapeHtml(String(t))}</span>`)
           .join("");
         return `
-          <div class="recipe-card ${idx === 0 ? "active" : ""}" data-recipe-idx="${idx}">
+          <div class="recipe-card ${idx === lastActiveIndex ? "active" : ""}" data-recipe-idx="${idx}">
             <div class="title">${escapeHtml(item.title || "Món gợi ý")}</div>
             <div class="meta">${escapeHtml(recipeMetaLine(item) || "Thời gian linh hoạt")}</div>
             <div class="recipe-tags">${tags}</div>
@@ -217,7 +269,13 @@
         const idx = Number(btn.getAttribute("data-recipe-open"));
         const recipe = results[idx];
         if (!recipe) return;
+        lastActiveIndex = idx;
         showResult(recipe);
+        saveLastResults({
+          createdAt: Date.now(),
+          results: activeResults,
+          activeIndex: lastActiveIndex,
+        });
         host.querySelectorAll(".recipe-card").forEach((card) => card.classList.remove("active"));
         const card = host.querySelector(`[data-recipe-idx="${idx}"]`);
         if (card) card.classList.add("active");
@@ -458,7 +516,9 @@
 
   async function pushHistory(entry) {
     const items = loadHistory();
-    items.unshift(entry);
+    const safeTitle = normalizeTitle(entry?.title || "");
+    const safeEntry = { ...entry, title: safeTitle || entry?.title || "Món gợi ý" };
+    items.unshift(safeEntry);
     saveHistory(items);
     await pushHistoryToServer(entry);
   }
@@ -558,9 +618,11 @@
     });
 
     setActiveResults(results);
+    lastActiveIndex = 0;
     $("suggestionsShell")?.classList.remove("hidden");
     $("result")?.classList.add("hidden");
     $("resultEmpty")?.classList.remove("hidden");
+    saveLastResults({ createdAt: Date.now(), results, activeIndex: 0 });
 
     if (addHistory) {
       await pushHistory({
@@ -585,11 +647,31 @@
     localStorage.removeItem(LS.restore);
     try {
       const data = JSON.parse(raw);
-      if (data?.result) showResult(data.result);
+      if (data?.result) {
+        lastActiveIndex = 0;
+        setActiveResults([data.result]);
+        showResult(data.result);
+        saveLastResults({ createdAt: Date.now(), results: [data.result], activeIndex: 0 });
+      }
       const ingEl = $("ingredientsText");
       if (ingEl && Array.isArray(data?.ingredients)) ingEl.value = data.ingredients.join(", ");
+      saveHomeDraft(collectHomeDraft());
     } catch {
       // ignore bad restore payload
+    }
+  }
+
+  function restoreLastResults() {
+    const stored = loadLastResults();
+    if (!stored || !Array.isArray(stored.results) || !stored.results.length) return;
+    lastActiveIndex = Number(stored.activeIndex || 0);
+    setActiveResults(stored.results);
+    $("suggestionsShell")?.classList.remove("hidden");
+    const recipe = stored.results[lastActiveIndex] || stored.results[0];
+    if (recipe) {
+      showResult(recipe);
+      lastActiveIndex = stored.results.indexOf(recipe);
+      renderResultList(stored.results);
     }
   }
 
@@ -622,6 +704,7 @@
     lastConstraints = null;
     lastGenerationId = null;
     activeResults = [];
+    lastActiveIndex = 0;
 
     renderResultList([]);
     $("result")?.classList.add("hidden");
@@ -629,6 +712,8 @@
     $("suggestionsShell")?.classList.add("hidden");
     resetTimer();
     renderRecipePantryStatus(null);
+    clearHomeDraft();
+    clearLastResults();
   }
 
   function setActivePill(btn) {
@@ -638,6 +723,88 @@
     btn.classList.add("pill-active");
   }
 
+  function setActivePillByData(attr, value) {
+    const btn = document.querySelector(`[data-${attr}="${value}"]`);
+    if (btn) setActivePill(btn);
+  }
+
+  function collectHomeDraft() {
+    return {
+      ingredientsText: $("ingredientsText")?.value || "",
+      timeLimit: $("timeLimit")?.value || "",
+      servings: $("servings")?.value || "",
+      diet: $("diet")?.value || "",
+      allergies: $("allergies")?.value || "",
+      cuisine: $("cuisine")?.value || "",
+      spicyLevel: $("spicyLevel")?.value || "",
+      difficulty: $("difficulty")?.value || "",
+      budget: $("budget")?.value || "",
+      calorieLimit: $("calorieLimit")?.value || "",
+      recipeCountMain: $("recipeCountMain")?.value || "",
+      notes: $("notes")?.value || "",
+      equipment: Array.from(document.querySelectorAll(".equip"))
+        .filter((el) => el.checked)
+        .map((el) => el.value),
+    };
+  }
+
+  function applyHomeDraft(draft) {
+    if (!draft) return;
+    const map = [
+      ["ingredientsText", draft.ingredientsText],
+      ["timeLimit", draft.timeLimit],
+      ["servings", draft.servings],
+      ["diet", draft.diet],
+      ["allergies", draft.allergies],
+      ["cuisine", draft.cuisine],
+      ["spicyLevel", draft.spicyLevel],
+      ["difficulty", draft.difficulty],
+      ["budget", draft.budget],
+      ["calorieLimit", draft.calorieLimit],
+      ["recipeCountMain", draft.recipeCountMain],
+      ["notes", draft.notes],
+    ];
+    map.forEach(([id, val]) => {
+      const el = $(id);
+      if (el && val != null) el.value = val;
+    });
+    if (draft.timeLimit) setActivePillByData("time", String(draft.timeLimit));
+    if (draft.servings) setActivePillByData("serv", String(draft.servings));
+    if (draft.diet) setActivePillByData("diet", String(draft.diet));
+
+    const equips = new Set(draft.equipment || []);
+    document.querySelectorAll(".equip").forEach((el) => {
+      el.checked = equips.has(el.value);
+    });
+  }
+
+  function bindDraftAutoSave() {
+    const save = () => saveHomeDraft(collectHomeDraft());
+    const inputIds = [
+      "ingredientsText",
+      "timeLimit",
+      "servings",
+      "diet",
+      "allergies",
+      "cuisine",
+      "spicyLevel",
+      "difficulty",
+      "budget",
+      "calorieLimit",
+      "recipeCountMain",
+      "notes",
+    ];
+    inputIds.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener("input", save);
+      el.addEventListener("change", save);
+    });
+    document.querySelectorAll(".equip").forEach((el) => {
+      el.addEventListener("change", save);
+    });
+  }
+
   function bindPills() {
     document.querySelectorAll("[data-time]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -645,6 +812,7 @@
         const value = Number(btn.getAttribute("data-time"));
         const input = $("timeLimit");
         if (input && Number.isFinite(value)) input.value = String(value);
+        saveHomeDraft(collectHomeDraft());
       });
     });
 
@@ -654,6 +822,7 @@
         const value = Number(btn.getAttribute("data-serv"));
         const input = $("servings");
         if (input && Number.isFinite(value)) input.value = String(value);
+        saveHomeDraft(collectHomeDraft());
       });
     });
 
@@ -663,6 +832,7 @@
         const value = btn.getAttribute("data-diet");
         const input = $("diet");
         if (input && value != null) input.value = value;
+        saveHomeDraft(collectHomeDraft());
       });
     });
   }
@@ -679,6 +849,7 @@
         const exists = current.some((item) => item.toLowerCase() === value.toLowerCase());
         if (!exists) current.push(value);
         input.value = current.join(", ");
+        saveHomeDraft(collectHomeDraft());
       });
     });
   }
@@ -692,6 +863,9 @@
     updateUserUI();
     bindPills();
     bindQuickChips();
+    applyHomeDraft(loadHomeDraft());
+    bindDraftAutoSave();
+    restoreLastResults();
 
     const navSettings = $("btnSettingsNav");
     if (navSettings) navSettings.addEventListener("click", () => (window.location.href = "settings.html"));
@@ -731,3 +905,4 @@
 
   document.addEventListener("DOMContentLoaded", setupIndexPage);
 })();
+

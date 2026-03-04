@@ -1,0 +1,368 @@
+﻿<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SmartCook — Gợi ý món theo nguyên liệu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/index.css" />
+  </head>
+  <body data-page="home">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">SmartCook</div>
+          <div class="sidebar-sub">AI Meal Planner</div>
+        </div>
+        <nav class="sidebar-nav">
+  <a class="nav-item nav-item-active" href="home.html">
+    <span class="dot"></span>
+    <span class="icon">🏠</span>
+    Trang chủ
+  </a>
+  <a class="nav-item" href="scan.html">
+    <span class="dot"></span>
+    <span class="icon">📷</span>
+    Quét ảnh (AI)
+  </a>
+  <a class="nav-item" href="reviews.html">
+    <span class="dot"></span>
+    <span class="icon">⭐</span>
+    Đánh giá món
+  </a>
+  <a class="nav-item" href="pantry.html">
+    <span class="dot"></span>
+    <span class="icon">🧊</span>
+    Tủ lạnh
+  </a>
+  <a class="nav-item" href="favorites.html">
+    <span class="dot"></span>
+    <span class="icon">❤️</span>
+    Món yêu thích
+  </a>
+  <a class="nav-item" href="history.html">
+    <span class="dot"></span>
+    <span class="icon">🕘</span>
+    Lịch sử
+  </a>
+</nav>
+        <div class="sidebar-footer">
+          <button class="sidebar-settings" type="button" id="btnSettingsNav">
+            <span class="sidebar-settings-icon">⚙</span>
+            <span class="sidebar-settings-text">Cài đặt</span>
+          </button>
+          <button class="sidebar-user-row" type="button" id="btnProfileNav">
+            <span class="sidebar-user-avatar"></span>
+            <span class="sidebar-user-name">Đăng nhập</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="app">
+        <header class="topbar">
+          <div class="topbar-left">
+            <p class="eyebrow">Hôm nay bạn có gì?</p>
+            <h1 class="page-title">Nhập nguyên liệu, AI gợi ý món ngay.</h1>
+            <p class="page-sub">
+              Gõ nhanh nguyên liệu đang có trong tủ lạnh, hoặc quét ảnh hóa đơn/nhãn thực phẩm.
+              SmartCook sẽ gợi ý món ngon phù hợp khẩu vị và thời gian của bạn.
+            </p>
+          </div>
+          <div class="topbar-right">
+            <div class="topbar-actions">
+              <button id="btnClear" class="btn btn-ghost" type="button"><span class="icon">↺</span>Làm mới</button>
+              <button id="btnGenerate" class="btn btn-primary" type="button"><span class="icon">✨</span>Gợi ý món ngay</button>
+            </div>
+          </div>
+        </header>
+
+        <main class="grid content-grid">
+          <section class="card hero-card">
+            <div class="hero-header">
+              <div>
+                <div class="hero-label">Nguyên liệu (nhấn Enter để thêm)</div>
+                <div class="hero-input-wrap">
+                  <textarea
+                    id="ingredientsText"
+                    class="textarea hero-input"
+                    rows="3"
+                    placeholder="Ví dụ: Trứng, Cà chua, Thịt bò, Hành tây..."
+                  ></textarea>
+                </div>
+                <div class="chips" id="quickChips">
+                  <button class="chip" data-add="trứng gà">Trứng gà</button>
+                  <button class="chip" data-add="ức gà">Ức gà</button>
+                  <button class="chip" data-add="thịt heo">Thịt heo</button>
+                  <button class="chip" data-add="cá hồi">Cá hồi</button>
+                  <button class="chip" data-add="cà chua">Cà chua</button>
+                  <button class="chip" data-add="bông cải xanh">Bông cải xanh</button>
+                  <button class="chip" data-add="nấm">Nấm</button>
+                  <button class="chip" data-add="đậu hũ">Đậu hũ</button>
+                </div>
+              </div>
+
+              <div class="hero-right">
+                <div class="hero-group">
+                  <span class="hero-caption">Thời gian nấu tối đa</span>
+                  <div class="pill-group">
+                    <button class="pill" data-time="15">15p</button>
+                    <button class="pill pill-active" data-time="30">30p</button>
+                    <button class="pill" data-time="45">45p</button>
+                    <button class="pill" data-time="60">60p+</button>
+                  </div>
+                  <input id="timeLimit" type="number" min="5" step="5" class="input input-sm" value="30" />
+                </div>
+
+                <div class="hero-group">
+                  <span class="hero-caption">Khẩu phần (người)</span>
+                  <div class="pill-group">
+                    <button class="pill" data-serv="1">1</button>
+                    <button class="pill pill-active" data-serv="2">2</button>
+                    <button class="pill" data-serv="3">3</button>
+                    <button class="pill" data-serv="4">4+</button>
+                  </div>
+                  <input id="servings" type="number" min="1" step="1" class="input input-sm" value="2" />
+                </div>
+              </div>
+            </div>
+
+            <div class="hero-footer">
+              <div class="hero-options">
+                <div>
+                  <label class="label">Chế độ ăn (tuỳ chọn)</label>
+                  <div class="pill-group pill-wrap">
+                    <button class="pill" data-diet="vegetarian">Ăn chay</button>
+                    <button class="pill" data-diet="healthy">Healthy</button>
+                    <button class="pill" data-diet="low_carb">Low-carb</button>
+                    <button class="pill" data-diet="keto">Keto</button>
+                    <button class="pill" data-diet="clean">Eat Clean</button>
+                  </div>
+                  <select id="diet" class="select select-sm">
+                    <option value="">Không</option>
+                    <option value="vegetarian">Chay (có trứng/sữa)</option>
+                    <option value="vegan">Thuần chay</option>
+                    <option value="low_carb">Low-carb</option>
+                    <option value="high_protein">Giàu đạm</option>
+                    <option value="gluten_free">Không gluten</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">Dị ứng (chọn nhiều)</label>
+                  <input
+                    id="allergies"
+                    class="input input-sm"
+                    placeholder="Ví dụ: Lạc, Hải sản, Sữa, Gluten..."
+                  />
+                </div>
+
+                <div>
+                  <label class="label">Khẩu vị / ẩm thực</label>
+                  <select id="cuisine" class="select select-sm">
+                    <option value="">Tự động theo nguyên liệu</option>
+                    <option value="viet">Việt Nam</option>
+                    <option value="asian">Châu Á</option>
+                    <option value="western">Âu</option>
+                    <option value="korean">Hàn</option>
+                    <option value="japanese">Nhật</option>
+                    <option value="thai">Thái</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">Độ cay</label>
+                  <select id="spicyLevel" class="select select-sm">
+                    <option value="">Tuỳ món</option>
+                    <option value="none">Không cay</option>
+                    <option value="mild">Nhẹ</option>
+                    <option value="medium">Vừa</option>
+                    <option value="hot">Cay</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">Độ khó</label>
+                  <select id="difficulty" class="select select-sm">
+                    <option value="">Tuỳ món</option>
+                    <option value="easy">Dễ</option>
+                    <option value="medium">Vừa</option>
+                    <option value="hard">Khó</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">Ngân sách</label>
+                  <select id="budget" class="select select-sm">
+                      <option value="">Tuỳ món</option>
+                      <option value="low">Tiết kiệm</option>
+                      <option value="medium">Vừa</option>
+                      <option value="high">Thoải mái</option>
+                    </select>
+                </div>
+
+                <div>
+                  <label class="label">Calo mục tiêu (kcal)</label>
+                  <input
+                    id="calorieLimit"
+                    type="number"
+                    min="100"
+                    step="50"
+                    class="input input-sm"
+                    placeholder="Ví dụ: 500"
+                  />
+                </div>
+
+                <div>
+                  <label class="label">Số món gợi ý</label>
+                  <input id="recipeCountMain" type="number" min="1" value="3" class="input input-sm" />
+                </div>
+
+                <div>
+                  <label class="label">Thiết bị sẵn có</label>
+                  <div class="checks">
+                    <label class="check"><input class="equip" type="checkbox" value="stove" />Bếp gas/điện</label>
+                    <label class="check"><input class="equip" type="checkbox" value="oven" />Lò nướng</label>
+                    <label class="check"><input class="equip" type="checkbox" value="airfryer" />Nồi chiên</label>
+                    <label class="check"><input class="equip" type="checkbox" value="microwave" />Lò vi sóng</label>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="label">Ghi chú cho AI</label>
+                  <textarea
+                    id="notes"
+                    class="textarea"
+                    rows="3"
+                    placeholder="Ví dụ: Ưu tiên món ít dầu, không hành tây, cần bữa nhẹ..."
+                  ></textarea>
+                </div>
+
+                <div class="hero-toggle">
+                  <label class="label">Lưu lịch sử nguyên liệu</label>
+                  <div class="toggle-row">
+                    <span class="toggle-desc">Lưu trên trình duyệt để lần sau gợi ý nhanh hơn.</span>
+                    <label class="switch">
+                      <input type="checkbox" checked />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card suggestions-shell hidden" id="suggestionsShell">
+            <div class="suggestions-head">
+              <div>
+                <h2>Danh sách món gợi ý</h2>
+                <p class="page-sub">Chọn 1 món để xem công thức chi tiết.</p>
+              </div>
+              <div class="suggestions-actions">
+                <button id="btnShuffle" class="btn btn-ghost" type="button"><span class="icon">🔀</span>Làm mới gợi ý</button>
+              </div>
+            </div>
+
+            <div class="two-col">
+              <div class="panel">
+                <div class="panel-title">Món gợi ý</div>
+                <div id="resultList" class="recipe-list">
+                  <div class="empty">Chưa có gợi ý nào.</div>
+                </div>
+              </div>
+
+              <div class="panel detail-panel">
+                <div class="panel-title">Chi tiết công thức</div>
+                <div id="resultEmpty" class="empty">
+                  Nhấn <b>Gợi ý món ngay</b>, sau đó chọn 1 món để xem chi tiết.
+                </div>
+
+                <article id="result" class="result hidden">
+                  <div class="result-head">
+                    <h3 id="resultTitle">Món ngon</h3>
+                    <div class="meta" id="resultMeta"></div>
+                  </div>
+
+                  <div class="result-cols">
+                    <div>
+                      <h4>Nguyên liệu</h4>
+                      <ul id="resultIngredients" class="list"></ul>
+                    </div>
+                    <div>
+                      <h4>Cách làm</h4>
+                      <ol id="resultSteps" class="steps"></ol>
+                    </div>
+                  </div>
+
+                  <div class="result-cols pantry-detail">
+                    <div>
+                      <h4>Trong tủ lạnh</h4>
+                      <ul id="recipeHaveList" class="list"></ul>
+                    </div>
+                    <div>
+                      <h4>Cần mua thêm</h4>
+                      <ul id="recipeMissingList" class="list"></ul>
+                    </div>
+                  </div>
+
+                  <div class="cook-tools">
+                    <div class="cook-tool">
+                      <h4>Checklist nấu ăn</h4>
+                      <div id="stepsProgress" class="status">0/0 bước</div>
+                    </div>
+                    <div class="cook-tool timer">
+                      <h4>Hẹn giờ</h4>
+                      <div class="timer-row">
+                        <input
+                          id="timerMinutes"
+                          class="input input-sm"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value="15"
+                        />
+                        <span class="timer-label">phút</span>
+                        <div id="timerDisplay" class="timer-display">15:00</div>
+                      </div>
+                      <div class="timer-actions">
+                        <button id="btnTimerStart" class="btn btn-secondary" type="button"><span class="icon">▶</span>Bắt đầu</button>
+                        <button id="btnTimerPause" class="btn btn-ghost" type="button"><span class="icon">⏸</span>Tạm dừng</button>
+                        <button id="btnTimerReset" class="btn btn-ghost" type="button"><span class="icon">↺</span>Reset</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="result-footer">
+                    <div class="tips">
+                      <h4>Mẹo</h4>
+                      <ul id="resultTips" class="list"></ul>
+                    </div>
+                    <div class="actions">
+                      <a class="btn btn-ghost" href="reviews.html"><span class="icon">⭐</span>Đánh giá</a>
+                      <button id="btnSave" class="btn btn-secondary" type="button"><span class="icon">💾</span>Lưu món</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>\n<script src="./js/index.js"></script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+

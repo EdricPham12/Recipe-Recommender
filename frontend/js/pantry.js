@@ -202,3 +202,4 @@
 
   document.addEventListener("DOMContentLoaded", setupPantryPage);
 })();
+
