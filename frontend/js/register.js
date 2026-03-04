@@ -1,6 +1,6 @@
-﻿const LS = {
+const LS = {
   user: "cookai.user",
-  users: "cookai.users",
+  apiBase: "smartcook_api_base",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -38,20 +38,13 @@ function passwordIssues(pass) {
   return issues;
 }
 
-function loadUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(LS.users) || "[]");
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(items) {
-  localStorage.setItem(LS.users, JSON.stringify(items));
-}
-
 function saveUser(user) {
   localStorage.setItem(LS.user, JSON.stringify(user));
+}
+
+function getApiBase() {
+  const saved = (localStorage.getItem(LS.apiBase) || "").trim();
+  return (saved || "http://127.0.0.1:9000").replace(/\/+$/, "");
 }
 
 function bindRegisterForm() {
@@ -59,7 +52,7 @@ function bindRegisterForm() {
   if (!form) return;
   const status = $("authMessage");
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = $("registerName")?.value?.trim() || "";
     const username = $("registerUsername")?.value?.trim() || "";
@@ -99,19 +92,38 @@ function bindRegisterForm() {
       return;
     }
 
-    const users = loadUsers();
-    if (users.some((u) => u.email === email || u.username === username)) {
-      setStatus(status, "Email hoặc tên đăng nhập đã tồn tại.", "warn");
-      return;
+    try {
+      const resp = await fetch(`${getApiBase()}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          username,
+          email,
+          phone: normalizePhone(phoneRaw),
+          password: pass,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setStatus(status, String(data?.detail || "Đăng ký thất bại."), "bad");
+        return;
+      }
+
+      const user = data?.user || {};
+      saveUser({
+        id: user.id || null,
+        name: user.name || name,
+        username: user.username || username,
+        email: user.email || email,
+        phone: user.phone || normalizePhone(phoneRaw),
+      });
+
+      setStatus(status, "Đăng ký thành công. Đang chuyển hướng...", "good");
+      setTimeout(() => (window.location.href = "index.html"), 600);
+    } catch {
+      setStatus(status, "Không kết nối được server. Kiểm tra backend đang chạy.", "bad");
     }
-
-    const newUser = { name, username, email, phone: normalizePhone(phoneRaw), password: pass };
-    users.push(newUser);
-    saveUsers(users);
-    saveUser({ name, username, email, phone: normalizePhone(phoneRaw) });
-
-    setStatus(status, "Đăng ký thành công. Đang chuyển hướng...", "good");
-    setTimeout(() => (window.location.href = "index.html"), 600);
   });
 }
 

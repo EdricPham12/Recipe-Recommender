@@ -1,9 +1,10 @@
-﻿(function () {
+(function () {
   "use strict";
 
   const LS = {
     pantry: "cookai.pantry",
     user: "cookai.user",
+    apiBase: "smartcook_api_base",
   };
 
   function $(id) {
@@ -26,6 +27,11 @@
       out.push(item);
     }
     return out;
+  }
+
+  function getApiBase() {
+    const saved = (localStorage.getItem(LS.apiBase) || "").trim();
+    return (saved || "http://127.0.0.1:9000").replace(/\/+$/, "");
   }
 
   function loadPantryText() {
@@ -73,14 +79,50 @@
     });
   }
 
+  async function pullPantryFromServer() {
+    const user = loadUser();
+    const userId = Number(user?.id || 0);
+    if (!Number.isFinite(userId) || userId <= 0) return false;
+
+    try {
+      const resp = await fetch(`${getApiBase()}/pantry/${userId}`);
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      const text = String(data?.text || "");
+      savePantryText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function pushPantryToServer(text) {
+    const user = loadUser();
+    const userId = Number(user?.id || 0);
+    if (!Number.isFinite(userId) || userId <= 0) return false;
+
+    try {
+      const resp = await fetch(`${getApiBase()}/pantry/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text || "" }),
+      });
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  }
+
   function performLogout() {
     clearUser();
     updateUserUI();
   }
 
-  function setupPantryPage() {
+  async function setupPantryPage() {
     updateUserUI();
     let editMode = false;
+
+    await pullPantryFromServer();
 
     const navSettings = $("btnSettingsNav");
     if (navSettings) navSettings.addEventListener("click", () => (window.location.href = "settings.html"));
@@ -99,18 +141,24 @@
         else performLogout();
       });
 
-    $("btnSavePantry")?.addEventListener("click", () => {
+    $("btnSavePantry")?.addEventListener("click", async () => {
       const ingEl = $("ingredientsText");
       const pantryEl = $("pantryText");
       const ingredients = normalizeIngredients(ingEl?.value || "");
       const pantryInput = normalizeIngredients(pantryEl?.value || "");
       const stored = normalizeIngredients(loadPantryText());
       const merged = normalizeIngredients([...stored, ...ingredients, ...pantryInput].join(", "));
-      savePantryText(merged.join(", "));
+      const mergedText = merged.join(", ");
+
+      savePantryText(mergedText);
+      const synced = await pushPantryToServer(mergedText);
+
       if (pantryEl) pantryEl.value = "";
       if (ingEl) ingEl.value = "";
       renderPantrySavedList();
-      alert("Đã lưu tủ lạnh.");
+
+      if (synced) alert("Đã lưu tủ lạnh (SQL).");
+      else alert("Đã lưu cục bộ, chưa đồng bộ SQL. Kiểm tra đăng nhập/backend.");
     });
 
     const btnToggleEdit = $("btnToggleEdit");
@@ -127,7 +175,7 @@
       });
     }
 
-    $("btnRemoveSelected")?.addEventListener("click", () => {
+    $("btnRemoveSelected")?.addEventListener("click", async () => {
       const host = $("pantrySavedList");
       if (!host) return;
       const checks = Array.from(host.querySelectorAll("input[type='checkbox'][data-name]"));
@@ -139,8 +187,11 @@
       const stored = normalizeIngredients(loadPantryText());
       const removeKeys = selected.map((x) => x.toLowerCase());
       const next = stored.filter((x) => !removeKeys.includes(x.toLowerCase()));
-      savePantryText(next.join(", "));
+      const nextText = next.join(", ");
+      savePantryText(nextText);
+      const synced = await pushPantryToServer(nextText);
       renderPantrySavedList();
+      if (!synced) alert("Đã cập nhật cục bộ, chưa đồng bộ SQL.");
     });
 
     const pantryEl = $("pantryText");

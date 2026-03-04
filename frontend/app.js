@@ -1,6 +1,6 @@
 ﻿/* Cook-AI frontend (no build tools) */
 console.log("APP JS LOADED OK");
-const API_BASE_DEFAULT = "http://127.0.0.1:8000";
+const API_BASE_DEFAULT = "http://127.0.0.1:9000";
 const LS = {
   sessionId: "cookai.sessionId",
   history: "cookai.history",
@@ -11,6 +11,7 @@ const LS = {
   users: "cookai.users",
   feedback: "cookai.feedback",
   restore: "cookai.restore",
+  apiBase: "smartcook_api_base",
 };
 
 let lastResult = null;
@@ -112,7 +113,8 @@ function getSessionId() {
 }
 
 function getApiBase() {
-  return API_BASE_DEFAULT;
+  const saved = (localStorage.getItem(LS.apiBase) || "").trim();
+  return (saved || API_BASE_DEFAULT).replace(/\/+$/, "");
 }
 
 function setStatus(text, kind) {
@@ -1248,7 +1250,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateUserUI();
   if ($("favorites")) renderFavorites();
 });
-
 
 
 

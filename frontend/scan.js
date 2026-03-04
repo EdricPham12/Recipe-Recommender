@@ -1,6 +1,7 @@
 ﻿(function(){
   const LS = {
     pantry: 'cookai.pantry',
+    user: 'cookai.user',
   };
   const btnOpenCam = document.getElementById('btnOpenCam');
   const btnCapture = document.getElementById('btnCapture');
@@ -32,7 +33,7 @@
   function getApiBase(){
     const saved = (localStorage.getItem('smartcook_api_base') || '').trim();
     if(saved) return saved.replace(/\/$/, '');
-    return 'http://127.0.0.1:8000';
+    return 'http://127.0.0.1:9000';
   }
   function normalizeIngredients(text){
     const raw = String(text || '')
@@ -58,6 +59,30 @@
 
   function savePantryText(text){
     localStorage.setItem(LS.pantry, text || '');
+  }
+
+  function loadUser(){
+    try{
+      return JSON.parse(localStorage.getItem(LS.user) || 'null');
+    }catch{
+      return null;
+    }
+  }
+
+  async function pushPantryToServer(text){
+    const user = loadUser();
+    const userId = Number(user?.id || 0);
+    if(!Number.isFinite(userId) || userId <= 0) return false;
+    try{
+      const resp = await fetch(`${getApiBase()}/pantry/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text || '' }),
+      });
+      return resp.ok;
+    }catch{
+      return false;
+    }
   }
 
   function mapVisionResponse(json){
@@ -349,7 +374,7 @@
       const map = {
         meatloaf:'thịt băm','meat loaf':'thịt băm','ground beef':'thịt băm','minced beef':'thịt băm','ground meat':'thịt băm',
         baguette:'bánh mì', loaf:'bánh mì',
-        fish:'cá', carp:'cá', tench:'cá', shrimp:'tôm', prawn:'tôm', crab:'cua', chicken:'gà', beef:'bò', pork:'heo', heo:'thịt', pig:'thịt', hog:'thịt', egg:'trứng',
+        fish:'cá', carp:'cá', tench:'cá', shrimp:'tôm', prawn:'tôm', crab:'cua', chicken:'thịt gà', beef:'thịt bò', pork:'thịt heo', heo:'thịt heo', pig:'thịt heo', hog:'thịt heo', egg:'trứng',
         rice:'gạo', tomato:'cà chua', potato:'khoai tây', onion:'hành', garlic:'tỏi', mushroom:'nấm', sugar:'đường', salt:'muối', pepper:'tiêu'
       };
       for(const k in map) if(x.includes(k)) return map[k];
@@ -373,6 +398,7 @@
     if(isBlockedIngredient(name)) return null;
     const norm = canonicalizeList([name])[0] || name;
     if(isBlockedIngredient(norm)) return null;
+    if(String(norm).trim().toLowerCase() === 'thịt') return null;
     return norm;
   }
 
@@ -584,7 +610,7 @@
     if(ingredientsText) ingredientsText.value = merged.join('\n');
   });
 
-  btnSavePantry?.addEventListener('click', ()=>{
+  btnSavePantry?.addEventListener('click', async ()=>{
     const ingredientLines = normalizeIngredients(ingredientsText?.value || '');
     const pantryLines = normalizeIngredients(pantryText?.value || '');
     const nextFromScan = normalizeIngredients([...ingredientLines, ...pantryLines].join(', '));
@@ -596,8 +622,11 @@
 
     const stored = normalizeIngredients(loadPantryText());
     const merged = normalizeIngredients([...stored, ...nextFromScan].join(', '));
-    savePantryText(merged.join(', '));
-    alert('Đã lưu vào tủ lạnh.');
+    const mergedText = merged.join(', ');
+    savePantryText(mergedText);
+    const synced = await pushPantryToServer(mergedText);
+    if(synced) alert('Đã lưu vào tủ lạnh (SQL).');
+    else alert('Đã lưu cục bộ, chưa đồng bộ SQL. Hãy kiểm tra đăng nhập/backend.');
   });
 })();
 

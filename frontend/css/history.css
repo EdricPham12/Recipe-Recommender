@@ -269,27 +269,29 @@ body {
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.9);
   padding: 12px;
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
+  display: flex;
   gap: 12px;
   align-items: center;
   width: 100%;
 }
 
 .history-info {
+  flex: 1;
   min-width: 0;
 }
 
 .history-item .title {
   font-weight: 700;
-  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .history-item .sub {
   color: var(--muted);
   font-size: 12px;
   margin-top: 4px;
-  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .history-actions {
@@ -355,10 +357,10 @@ body {
     padding: 16px 14px 22px;
   }
   .history-item {
-    grid-template-columns: 24px 1fr;
+    flex-wrap: wrap;
   }
   .history-actions {
-    grid-column: 1 / -1;
+    width: 100%;
     justify-content: flex-start;
   }
 }

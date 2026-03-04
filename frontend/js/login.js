@@ -1,7 +1,7 @@
-﻿const LS = {
+const LS = {
   user: "cookai.user",
-  users: "cookai.users",
   rememberLogin: "cookai.rememberLogin",
+  apiBase: "smartcook_api_base",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -13,20 +13,13 @@ function setStatus(el, text, type) {
   el.textContent = text || "";
 }
 
-function isValidEmail(email) {
-  return /.+@.+\..+/.test(email);
-}
-
-function loadUsers() {
-  try {
-    return JSON.parse(localStorage.getItem(LS.users) || "[]");
-  } catch {
-    return [];
-  }
-}
-
 function saveUser(user) {
   localStorage.setItem(LS.user, JSON.stringify(user));
+}
+
+function getApiBase() {
+  const saved = (localStorage.getItem(LS.apiBase) || "").trim();
+  return (saved || "http://127.0.0.1:9000").replace(/\/+$/, "");
 }
 
 function prefillRememberedLogin() {
@@ -48,7 +41,7 @@ function bindLoginForm() {
   if (!form) return;
   const status = $("authMessage");
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const loginId = $("loginId")?.value?.trim() || "";
     const pass = $("loginPassword")?.value || "";
@@ -58,21 +51,35 @@ function bindLoginForm() {
       setStatus(status, "Vui lòng nhập đầy đủ thông tin.", "warn");
       return;
     }
-    const users = loadUsers();
-    const match = users.find(
-      (u) => (u.email === loginId || u.username === loginId) && u.password === pass,
-    );
-    if (!match) {
-      setStatus(status, "Sai tên đăng nhập/email hoặc mật khẩu.", "bad");
-      return;
+
+    try {
+      const resp = await fetch(`${getApiBase()}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ login_id: loginId, password: pass }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        setStatus(status, String(data?.detail || "Sai tên đăng nhập/email hoặc mật khẩu."), "bad");
+        return;
+      }
+
+      const user = data?.user || {};
+      saveUser({
+        id: user.id || null,
+        name: user.name || "",
+        email: user.email || "",
+        username: user.username || "",
+        phone: user.phone || "",
+      });
+      if (remember) localStorage.setItem(LS.rememberLogin, JSON.stringify({ loginId }));
+      else localStorage.removeItem(LS.rememberLogin);
+
+      setStatus(status, "Đăng nhập thành công. Đang chuyển hướng...", "good");
+      setTimeout(() => (window.location.href = "index.html"), 500);
+    } catch {
+      setStatus(status, "Không kết nối được server. Kiểm tra backend đang chạy.", "bad");
     }
-
-    saveUser({ name: match.name, email: match.email, username: match.username || "", avatar: match.avatar || "" });
-    if (remember) localStorage.setItem(LS.rememberLogin, JSON.stringify({ loginId }));
-    else localStorage.removeItem(LS.rememberLogin);
-
-    setStatus(status, "Đăng nhập thành công. Đang chuyển hướng...", "good");
-    setTimeout(() => (window.location.href = "index.html"), 500);
   });
 }
 

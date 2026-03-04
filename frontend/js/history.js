@@ -15,6 +15,12 @@ function escapeHtml(str) {
     .replace(/'/g, "&#39;");
 }
 
+function inlineText(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const state = {
   search: "",
   filter: "all",
@@ -120,18 +126,17 @@ function renderHistory() {
     .map((it, idx) => {
       const key = getItemKey(it);
       const when = formatTime(it.createdAt);
-      const ing = (it.ingredients || []).slice(0, 6).join(", ");
+      const ing = inlineText((it.ingredients || []).slice(0, 6).join(", "));
       const suffix = (it.ingredients || []).length > 6 ? "…" : "";
-      const title = String(it.title || "Món gợi ý")
-        .replace(/\s+/g, " ")
-        .trim();
+      const title = inlineText(it.title || "Món gợi ý");
+      const whenText = inlineText(when);
       const checked = state.selected.has(key) ? "checked" : "";
       return `
         <div class="history-item">
           <input class="history-check" type="checkbox" data-key="${key}" ${checked} />
           <div class="history-info">
             <div class="title">${escapeHtml(title || "Món gợi ý")}</div>
-            <div class="sub">${escapeHtml(when)} · ${escapeHtml(ing)}${suffix}</div>
+            <div class="sub">${escapeHtml(whenText)} · ${escapeHtml(ing)}${suffix}</div>
           </div>
           <div class="history-actions">
             <button class="btn btn-ghost" data-action="restore" data-key="${key}">↩ Mở lại</button>

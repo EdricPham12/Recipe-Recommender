@@ -5,6 +5,9 @@ import os
 import re
 import tempfile
 import uuid
+import secrets
+import hashlib
+import hmac
 from collections import defaultdict
 from functools import lru_cache
 from pathlib import Path
@@ -17,6 +20,8 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from PIL import Image
+from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 from transformers import CLIPModel, CLIPProcessor
 from ultralytics import YOLO
@@ -422,6 +427,147 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+class RegisterPayload(BaseModel):
+    name: str | None = ""
+    username: str
+    email: str | None = ""
+    phone: str | None = ""
+    password: str
+
+
+class LoginPayload(BaseModel):
+    login_id: str
+    password: str
+
+
+def _hash_password(password: str) -> str:
+    salt = secrets.token_hex(16)
+    digest = hashlib.sha256(f"{salt}:{password}".encode("utf-8")).hexdigest()
+    return f"sha256${salt}${digest}"
+
+
+def _verify_password(password: str, stored_hash: str) -> bool:
+    if not stored_hash:
+        return False
+    if stored_hash.startswith("sha256$"):
+        parts = stored_hash.split("$")
+        if len(parts) != 3:
+            return False
+        _, salt, digest = parts
+        candidate = hashlib.sha256(f"{salt}:{password}".encode("utf-8")).hexdigest()
+        return hmac.compare_digest(candidate, digest)
+    return hmac.compare_digest(stored_hash, password)
+
+
+def _ensure_users_columns(db: Session) -> None:
+    cols = db.execute(text("SHOW COLUMNS FROM users")).mappings().all()
+    names = {str(c["Field"]).lower() for c in cols}
+    if "email" not in names:
+        db.execute(text("ALTER TABLE users ADD COLUMN email varchar(255) NULL"))
+    if "name" not in names:
+        db.execute(text("ALTER TABLE users ADD COLUMN name varchar(100) NULL"))
+    if "phone" not in names:
+        db.execute(text("ALTER TABLE users ADD COLUMN phone varchar(30) NULL"))
+    db.commit()
+
+
+@app.post("/auth/register")
+def auth_register(payload: RegisterPayload, db: Session = Depends(get_db)):
+    username = (payload.username or "").strip()
+    email = (payload.email or "").strip().lower()
+    name = (payload.name or "").strip()
+    phone = (payload.phone or "").strip()
+    password = payload.password or ""
+
+    if not username or not password:
+        raise HTTPException(status_code=400, detail="username va password la bat buoc")
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="password toi thieu 8 ky tu")
+
+    _ensure_users_columns(db)
+
+    existing = db.execute(
+        text("SELECT id FROM users WHERE username=:u OR (:e <> '' AND email=:e) LIMIT 1"),
+        {"u": username, "e": email},
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Tai khoan da ton tai")
+
+    pwd_hash = _hash_password(password)
+    db.execute(
+        text(
+            """
+            INSERT INTO users (username, email, name, phone, password_hash)
+            VALUES (:username, :email, :name, :phone, :password_hash)
+            """
+        ),
+        {
+            "username": username,
+            "email": email or None,
+            "name": name or None,
+            "phone": phone or None,
+            "password_hash": pwd_hash,
+        },
+    )
+    db.commit()
+
+    row = db.execute(
+        text(
+            """
+            SELECT id, username, COALESCE(email, '') AS email, COALESCE(name, '') AS name,
+                   COALESCE(phone, '') AS phone, created_at
+            FROM users
+            WHERE username=:u
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ),
+        {"u": username},
+    ).mappings().first()
+    return {"ok": True, "user": dict(row) if row else {"username": username, "email": email, "name": name, "phone": phone}}
+
+
+@app.post("/auth/login")
+def auth_login(payload: LoginPayload, db: Session = Depends(get_db)):
+    login_id = (payload.login_id or "").strip()
+    password = payload.password or ""
+    if not login_id or not password:
+        raise HTTPException(status_code=400, detail="login_id va password la bat buoc")
+
+    _ensure_users_columns(db)
+
+    row = db.execute(
+        text(
+            """
+            SELECT id, username, COALESCE(email, '') AS email, COALESCE(name, '') AS name,
+                   COALESCE(phone, '') AS phone, password_hash, created_at
+            FROM users
+            WHERE username=:x OR email=:x
+            ORDER BY id DESC
+            LIMIT 1
+            """
+        ),
+        {"x": login_id},
+    ).mappings().first()
+    if not row:
+        raise HTTPException(status_code=401, detail="Sai thong tin dang nhap")
+
+    if not _verify_password(password, str(row["password_hash"] or "")):
+        raise HTTPException(status_code=401, detail="Sai thong tin dang nhap")
+
+    return {
+        "ok": True,
+        "user": {
+            "id": row["id"],
+            "username": row["username"],
+            "email": row["email"],
+            "name": row["name"],
+            "phone": row["phone"],
+            "created_at": row["created_at"],
+        },
+    }
 
 
 @app.post("/api/smartcook/recognize")

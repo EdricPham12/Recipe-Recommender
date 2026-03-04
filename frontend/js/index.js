@@ -1,7 +1,7 @@
 ﻿(function () {
   "use strict";
 
-  const API_BASE_DEFAULT = "http://127.0.0.1:8000";
+  const API_BASE_DEFAULT = "http://127.0.0.1:9000";
   const LS = {
     sessionId: "cookai.sessionId",
     history: "cookai.history",
@@ -10,6 +10,7 @@
     recipeCount: "cookai.recipeCount",
     user: "cookai.user",
     restore: "cookai.restore",
+    apiBase: "smartcook_api_base",
   };
 
   let lastResult = null;
@@ -69,7 +70,8 @@
   }
 
   function getApiBase() {
-    return API_BASE_DEFAULT;
+    const saved = (localStorage.getItem(LS.apiBase) || "").trim();
+    return (saved || API_BASE_DEFAULT).replace(/\/+$/, "");
   }
 
   function loadHistory() {
@@ -431,10 +433,34 @@
     updateTimerDisplay();
   }
 
-  function pushHistory(entry) {
+  async function pushHistoryToServer(entry) {
+    const user = loadUser();
+    const userId = Number(user?.id || 0);
+    if (!Number.isFinite(userId) || userId <= 0) return false;
+    try {
+      const recipe = entry?.result || {};
+      const recipeId = String(
+        recipe.recipe_id || recipe.id || recipe.generation_id || `manual_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+      );
+      const resp = await fetch(`${getApiBase()}/history/${userId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipe_id: recipeId,
+          recipe_json: JSON.stringify(recipe || {}),
+        }),
+      });
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function pushHistory(entry) {
     const items = loadHistory();
     items.unshift(entry);
     saveHistory(items);
+    await pushHistoryToServer(entry);
   }
 
   function saveFavorite() {
@@ -537,7 +563,7 @@
     $("resultEmpty")?.classList.remove("hidden");
 
     if (addHistory) {
-      pushHistory({
+      await pushHistory({
         createdAt: Date.now(),
         title: results[0].title || "Món gợi ý",
         ingredients,
