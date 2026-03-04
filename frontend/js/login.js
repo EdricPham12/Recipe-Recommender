@@ -72,7 +72,7 @@ function bindLoginForm() {
     else localStorage.removeItem(LS.rememberLogin);
 
     setStatus(status, "Đăng nhập thành công. Đang chuyển hướng...", "good");
-    setTimeout(() => (window.location.href = "index.html"), 500);
+    setTimeout(() => (window.location.href = "home.html"), 500);
   });
 }
 
